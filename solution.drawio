@@ -1,0 +1,75 @@
+<mxfile host="65bd71144e">
+    <diagram id="t9q4DKnKi0Tih7HF12co" name="Page-1">
+        <mxGraphModel dx="927" dy="1603" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="6" style="edgeStyle=none;html=1;" edge="1" parent="1" source="2" target="5">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="Source System" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="20" y="90" width="120" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3" target="4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="JSON API" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" vertex="1" parent="1">
+                    <mxGeometry x="370" y="50" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="Ziel System" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="530" y="160" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="Push" style="edgeStyle=none;html=1;" edge="1" parent="1" source="5" target="3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="last Datapoint" style="edgeStyle=none;html=1;strokeWidth=1;fontSize=12;" edge="1" parent="1" source="5" target="3">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="320" y="170" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="310" y="140"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="5" value="Pusher" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" vertex="1" parent="1">
+                    <mxGeometry x="200" y="40" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="Security Topic to be able to reach the source system" style="edgeStyle=none;html=1;fillColor=#e51400;strokeColor=#B20000;strokeWidth=5;" edge="1" parent="1" source="9" target="2">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" style="edgeStyle=none;html=1;" edge="1" parent="1" source="9" target="4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Data Factory" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" vertex="1" parent="1">
+                    <mxGeometry x="270" y="280" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Event Ingestion" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="270" width="170" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="add Timestamp&lt;br&gt;add ID/Batch" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="370" y="120" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="Collector&lt;br&gt;Extract/Transform" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="90" width="110" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="DeltaLake Format" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="25" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="App Service" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="-70" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="AKS" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="360" y="-70" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="Container Apps" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="-140" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="Function Apps" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="360" y="-140" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="Bicep / Terraform" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="530" y="260" width="120" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

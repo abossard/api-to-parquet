@@ -1,0 +1,22 @@
+POST http://localhost:8080/ HTTP/1.1
+content-type: application/json
+
+{
+    "content": [{
+        "timestamp": {{$timestamp}},
+        "value": {{$randomInt 1 43}}
+    },{
+        "timestamp": {{$timestamp}},
+        "value": {{$randomInt 1 43}}
+    },{
+        "timestamp": {{$timestamp}},
+        "value": {{$randomInt 1 43}}
+    }],
+    "file": "{{$timestamp}}-{{$guid}}",
+    "timeGenerated": {{$timestamp}},
+    "id": "{{$guid}}"
+}
+
+###
+
+GET http://localhost:8080/ HTTP/1.1
