@@ -1,0 +1,8 @@
+L=westeurope
+RG=anbo-parjs
+ACR=acrcnfg6rri5hakw
+
+az group create -n $RG -l $L
+az deployment group create --resource-group $RG --template-file main.bicep
+
+az acr build -r $ACR -t js2par:latest .
