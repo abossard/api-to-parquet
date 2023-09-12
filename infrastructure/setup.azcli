@@ -1,6 +1,7 @@
+SALT=wed
 L=westeurope
-RG=anbo-parjs-demo-wed
-ACR=anboparjswww
+RG=anbo-parjs-demo-$SALT
+ACR=anboparjscr$SALT
 
 az group create -n $RG -l $L
 
@@ -13,5 +14,13 @@ az deployment group create --resource-group $RG \
 # build and push image
 az acr build -r $ACR -t js2par:latest -f src/Dockerfile src
 
+az deployment group show --name main  --resource-group $RG  --query properties.outputs
+# put containerAppFQDN to a variable
+TEST_URL=https://$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.containerAppFQDN.value -o tsv)
+echo $TEST_URL
 # deploy
-az deployment group create --resource-group $RG --template-file main.bicep --parameters containerRegistryName=$ACR
+az deployment group create --resource-group $RG --template-file infrastructure/main.bicep --parameters containerRegistryName=$ACR
+
+# test
+cd tests
+go run . $TEST_URL
