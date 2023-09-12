@@ -1,12 +1,12 @@
 L=westeurope
-RG=anbo-parjs-demo
+RG=anbo-parjs-demo-wed
 ACR=anboparjswww
 
 az group create -n $RG -l $L
 
 # initial deployment
 az deployment group create --resource-group $RG \
-    --template-file infrastructure/main.bicep \ 
+    --template-file infrastructure/main.bicep \
     --parameters containerRegistryName=$ACR \
     --parameters onlyDeployNginxExample=true
 
