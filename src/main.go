@@ -50,8 +50,14 @@ func saveTimeseriesToParquetFile(file *os.File, data []TimeSeriesData) error {
 
 // album represents data about a record album.
 type TimeSeriesData struct {
-	Timestamp int64   `parquet:"name=Timestamp, type=INT32"`
-	Value     float64 `parquet:"name=Value, type=DOUBLE"`
+	Timestamp       int64   `parquet:"name=Timestamp, type=INT64"`
+	TimeOffsetHours int8    `parquet:"name=TimeOffsetHours, type=INT64"`
+	PointId         string  `parquet:"name=PointId,  type=BYTE_ARRAY, convertedtype=UTF8"`
+	Sequence        int32   `parquet:"name=Sequence, type=INT64"`
+	Project         string  `parquet:"name=Project,  type=BYTE_ARRAY, convertedtype=UTF8"`
+	Value           float64 `parquet:"name=Value, type=DOUBLE"`
+	Res             string  `parquet:"name=Res,  type=BYTE_ARRAY, convertedtype=UTF8"`
+	Quality         int32   `parquet:"name=Quality, type=INT64"`
 }
 
 type input_record struct {
@@ -101,8 +107,14 @@ func main() {
 	var data []TimeSeriesData
 	for i := 0; i < 1000; i++ {
 		data = append(data, TimeSeriesData{
-			Timestamp: time.Now().Unix(),
-			Value:     float64(i),
+			Timestamp:       time.Now().Unix(),
+			TimeOffsetHours: 0,
+			PointId:         "PointId",
+			Sequence:        0,
+			Project:         "Project",
+			Res:             "Res",
+			Quality:         0,
+			Value:           float64(i),
 		})
 	}
 

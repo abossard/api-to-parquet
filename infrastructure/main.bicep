@@ -6,6 +6,7 @@ param containerAppName string = 'ca-${projectName}-${salt}'
 param containerRegistryName string = 'acr${salt}'
 param containerAppEnvName string = 'caenv-${projectName}-${salt}'
 param imageWithTag string = 'js2par:latest'
+param onlyDeployNginxExample bool = false
 param location string = resourceGroup().location
 
 param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
@@ -16,7 +17,7 @@ var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dd
 
 var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
 
-resource acr 'Microsoft.ContainerRegistry/registries@2021-06-01-preview' = {
+resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: containerRegistryName
   location: location
   sku: {
@@ -27,7 +28,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2021-06-01-preview' = {
   }
 }
 
-resource uai 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
+resource uai 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: 'id-${containerAppName}'
   location: location
 }
@@ -53,7 +54,7 @@ resource uaiRbacStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource sa 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageAccountName
   location: location
   kind: 'StorageV2'
@@ -70,23 +71,23 @@ resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01
   name: 'default'
 }
 
-resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2021-04-01' = {
+resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01' = {
   parent: sa
   name: 'default'
 }
-resource redisShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-04-01' = {
+resource redisShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = {
   parent: fileServices
   name: 'redis'
 }
 
-resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2022-09-01' = {
+resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
   name: blobContainerName
   parent: blobServices
   properties: {
   }
 }
 
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: containerAppLogAnalyticsName
   location: location
   properties: {
@@ -96,7 +97,7 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   }
 }
 
-resource containerAppEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
+resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: containerAppEnvName
   location: location
   properties: {
@@ -110,7 +111,7 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2022-01-01-preview' 
   }
 }
 
-resource redisCaEnvStorage 'Microsoft.App/managedEnvironments/storages@2023-04-01-preview' = {
+resource redisCaEnvStorage 'Microsoft.App/managedEnvironments/storages@2023-05-01' = {
   parent: containerAppEnv
   name: redisShare.name
   properties: {
@@ -143,7 +144,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
       ingress: {
         external: true
-        targetPort: 8080
+        targetPort: onlyDeployNginxExample ? 80: 8080
         allowInsecure: false
         traffic: [
           {
@@ -157,7 +158,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
       containers: [
         {
           name: containerAppName
-          image: '${acr.properties.loginServer}/${imageWithTag}'
+          image: onlyDeployNginxExample ? 'nginx' : '${acr.properties.loginServer}/${imageWithTag}' 
           env: [
             {
               name: 'STORAGE_ACCOUNT_NAME'
