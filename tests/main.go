@@ -63,7 +63,7 @@ func generateData() InputRecord {
 
 	// Generate three random time series data points
 	var content []TimeSeriesData
-	for i := 0; i < 20000; i++ {
+	for i := 0; i < 10000; i++ {
 		content = append(content, TimeSeriesData{
 			Timestamp:       time.Now().UnixNano() / int64(time.Millisecond),
 			TimeOffsetHours: int8(rand.Intn(24)),

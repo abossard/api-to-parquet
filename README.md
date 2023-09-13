@@ -39,7 +39,7 @@ go run .
 
 The application will process the time series data and save it to a Parquet file. The cache will be used to avoid duplicate writes to the Parquet file.
 
-## Authentication
+## Authentication to Azure Storage
 
 The application uses the Azure SDK for Go to authenticate with Azure Storage. The SDK uses the Azure Default Credential Provider Chain to authenticate. This means e.g. locally it will use the Azure CLI to authenticate, and in Azure it will use Managed Identity. Please see the [Azure SDK for Go documentation](https://docs.microsoft.com/en-us/azure/developer/go/azure-sdk-authorization) for more information.
 

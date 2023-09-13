@@ -1,6 +1,4 @@
 # syntax=docker/dockerfile:1
-
-
 FROM golang:latest AS build-stage
 
 WORKDIR /opt/api-to-parquet
