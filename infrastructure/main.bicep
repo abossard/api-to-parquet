@@ -8,6 +8,7 @@ param containerAppEnvName string = 'caenv-${projectName}-${salt}'
 param imageWithTag string = 'js2par:latest'
 param onlyDeployNginxExample bool = false
 param location string = resourceGroup().location
+param useManagedIdentity bool = false
 
 param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
 param storageAccountName string = 'castrg${salt}'
@@ -123,6 +124,14 @@ resource redisCaEnvStorage 'Microsoft.App/managedEnvironments/storages@2023-05-0
     }
   }
 }
+// var registryConfig = (useManagedIdentity) ? {
+//   identity: uai.id
+//   server: acr.properties.loginServer
+// } : {
+//   server: acr.properties.loginServer
+//   username: acr.listCredentials().username
+//   passwordSecretRef: 'myregistrypassword'
+// }
 
 resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   name: containerAppName
@@ -136,10 +145,17 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   properties: {
     managedEnvironmentId: containerAppEnv.id
     configuration: {
-      registries: [
+      secrets: [
         {
-          identity: uai.id
+          name: 'myregistrypassword'
+          value:  acr.listCredentials().passwords[0].value
+        }
+      ]
+      registries: [ 
+        {
           server: acr.properties.loginServer
+          username: acr.listCredentials().username
+          passwordSecretRef: 'myregistrypassword'
         }
       ]
       ingress: {
@@ -161,16 +177,27 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           image: onlyDeployNginxExample ? 'nginx' : '${acr.properties.loginServer}/${imageWithTag}' 
           env: [
             {
+              name: 'SHARED_ACCESS_TOKEN'
+              value: sa.listServiceSAS('2023-01-01', {
+                canonicalizedResource: '/blob/${sa.name}/${blobContainer.name}'
+                signedProtocol: 'https'
+                signedResourceTypes: 'c'
+                signedPermission: 'rwl'
+                signedServices: 'b'
+                signedExpiry: '2222-01-01T00:00:00Z'
+              }).serviceSasToken
+            }
+            {
+              name: 'AZURE_CLIENT_ID'
+              value: uai.properties.clientId
+            }
+            {
               name: 'STORAGE_ACCOUNT_NAME'
               value: sa.name
             }
             {
               name: 'STORAGE_CONTAINER_NAME'
               value: blobContainer.name
-            }
-            {
-              name: 'AZURE_CLIENT_ID'
-              value: uai.properties.clientId
             }
           ]
           resources: {
