@@ -14,9 +14,9 @@ param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
 param storageAccountName string = 'castrg${salt}'
 param blobContainerName string = 'parquet${salt}'
 
-var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+// var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
 
-var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+// var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: containerRegistryName
@@ -35,25 +35,25 @@ resource uai 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
 }
 
 
-resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, uai.id, acrPullRole)
-  scope: acr
-  properties: {
-    roleDefinitionId: acrPullRole
-    principalId: uai.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
+// resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+//   name: guid(resourceGroup().id, uai.id, acrPullRole)
+//   scope: acr
+//   properties: {
+//     roleDefinitionId: acrPullRole
+//     principalId: uai.properties.principalId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
 
-resource uaiRbacStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, uai.id, storageRole)
-  scope: sa
-  properties: {
-    roleDefinitionId: storageRole
-    principalId: uai.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
+// resource uaiRbacStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+//   name: guid(resourceGroup().id, uai.id, storageRole)
+//   scope: sa
+//   properties: {
+//     roleDefinitionId: storageRole
+//     principalId: uai.properties.principalId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
 
 resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageAccountName
@@ -124,14 +124,6 @@ resource redisCaEnvStorage 'Microsoft.App/managedEnvironments/storages@2023-05-0
     }
   }
 }
-// var registryConfig = (useManagedIdentity) ? {
-//   identity: uai.id
-//   server: acr.properties.loginServer
-// } : {
-//   server: acr.properties.loginServer
-//   username: acr.listCredentials().username
-//   passwordSecretRef: 'myregistrypassword'
-// }
 
 resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   name: containerAppName

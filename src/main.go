@@ -71,6 +71,7 @@ type input_record struct {
 const lastTimeGeneratedKey = "lastTimestamp"
 
 func main() {
+	log.Println("Starting API")
 	containerName := os.Getenv("STORAGE_CONTAINER_NAME")
 	if containerName == "" {
 		containerName = "superfiles"
