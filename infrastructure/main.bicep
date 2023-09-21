@@ -150,6 +150,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           name: 'myregistrypassword'
           value:  acr.listCredentials().passwords[0].value
         }
+        {
+          name: 'storageaccountkey'
+          value: sa.listKeys().keys[0].value
+        }
       ]
       registries: [ 
         {
@@ -177,15 +181,8 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           image: onlyDeployNginxExample ? 'nginx' : '${acr.properties.loginServer}/${imageWithTag}' 
           env: [
             {
-              name: 'SHARED_ACCESS_TOKEN'
-              value: sa.listServiceSAS('2023-01-01', {
-                canonicalizedResource: '/blob/${sa.name}/${blobContainer.name}'
-                signedProtocol: 'https'
-                signedResourceTypes: 'c'
-                signedPermission: 'rwl'
-                signedServices: 'b'
-                signedExpiry: '2222-01-01T00:00:00Z'
-              }).serviceSasToken
+              name: 'STORAGE_ACCOUNT_KEY'
+              secretRef: 'storageaccountkey'
             }
             {
               name: 'AZURE_CLIENT_ID'

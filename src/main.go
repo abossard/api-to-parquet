@@ -63,6 +63,7 @@ type TimeSeriesData struct {
 type input_record struct {
 	Content       []TimeSeriesData `json:"content"`
 	Id            string           `json:"id"`
+	Source        string           `json:"source"`
 	TimeGenerated int64            `json:"timeGenerated"`
 	File          string           `json:"file"`
 }
@@ -77,6 +78,10 @@ func main() {
 	accountName := os.Getenv("STORAGE_ACCOUNT_NAME")
 	if accountName == "" {
 		accountName = "anbofiles"
+	}
+	accountKey := os.Getenv("STORAGE_ACCOUNT_KEY")
+	if accountKey == "" {
+		accountKey = ""
 	}
 	log.Println(accountName)
 
@@ -94,13 +99,28 @@ func main() {
 		log.Fatal("value not found, cache not working")
 	}
 
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	var blobClient *azblob.Client
+
+	if accountKey == "" {
+		log.Println("No account key, using default credentials")
+		credential, err := azidentity.NewDefaultAzureCredential(nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		blobClient, _ = azblob.NewClient("https://"+accountName+".blob.core.windows.net/", credential, nil)
+	} else {
+		log.Println("Using account key")
+		credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
+		if err != nil {
+			log.Fatal(err)
+		}
+		blobClient, _ = azblob.NewClientWithSharedKeyCredential("https://"+accountName+".blob.core.windows.net/", credential, nil)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Print("Got Azure Credentials")
-
-	blobClient, _ := azblob.NewClient("https://"+accountName+".blob.core.windows.net/", cred, nil)
 
 	log.Print("Got Blob Client")
 	// generate a TimeseriesData with a for loop

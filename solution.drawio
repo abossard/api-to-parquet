@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="t9q4DKnKi0Tih7HF12co" name="Page-1">
-        <mxGraphModel dx="335" dy="1406" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="334" dy="1635" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -13,11 +13,20 @@
                 <mxCell id="8" value="parquet format" style="edgeStyle=none;html=1;" parent="1" source="3" target="4" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
+                <mxCell id="33" value="username / password" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3" target="26">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="shared storage storage key" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3" target="4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3" target="35">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
                 <mxCell id="3" value="JSON API" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
-                    <mxGeometry x="370" y="50" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="380" y="40" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="4" value="Azure Storage" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
-                    <mxGeometry x="530" y="160" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="580" y="170" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="7" value="Push" style="edgeStyle=none;html=1;" parent="1" source="5" target="3" edge="1">
                     <mxGeometry relative="1" as="geometry">
@@ -30,6 +39,11 @@
                         <Array as="points">
                             <mxPoint x="310" y="140"/>
                         </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="30" value="Client ID &amp;amp; Client Secret" style="edgeStyle=none;html=1;" parent="1" source="5" target="29" edge="1">
+                    <mxGeometry x="0.0022" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
@@ -55,7 +69,7 @@
                     <mxGeometry x="90" width="110" height="110" as="geometry"/>
                 </mxCell>
                 <mxCell id="17" value="DeltaLake Format" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="560" y="25" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="630" y="25" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="18" value="App Service" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="220" y="-70" width="120" height="60" as="geometry"/>
@@ -72,20 +86,25 @@
                 <mxCell id="22" value="Bicep / Terraform" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="530" y="260" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="25" style="edgeStyle=none;html=1;" parent="1" source="23" target="4" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="27" style="edgeStyle=none;html=1;" parent="1" source="23" target="26" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="23" value="Managed Identity" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
-                    <mxGeometry x="500" y="-35" width="30" height="60" as="geometry"/>
-                </mxCell>
                 <mxCell id="28" value="" style="edgeStyle=none;html=1;" parent="1" source="26" target="17" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="26" value="Container Registry" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
-                    <mxGeometry x="540" y="-120" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="620" y="-130" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="Access token" style="edgeStyle=none;html=1;" parent="1" source="29" target="5" edge="1">
+                    <mxGeometry x="-0.4796" y="24" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="29" value="Identity Provider" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="-140" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" style="edgeStyle=none;html=1;" edge="1" parent="1" source="35" target="4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" value="Change in Code" style="rhombus;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="150" width="80" height="80" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
