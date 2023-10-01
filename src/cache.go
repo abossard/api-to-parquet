@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -28,9 +29,10 @@ func NewCache() (*Cache, error) {
 	if redisHost != "" && redisPort != "" {
 		redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 		cache.client = redis.NewClient(&redis.Options{
-			Addr:     redisAddr,
-			Password: redisPassword,
-			DB:       0,
+			Addr:      redisAddr,
+			Password:  redisPassword,
+			DB:        0,
+			TLSConfig: &tls.Config{},
 		})
 
 		if err := cache.client.Ping(cache.client.Context()).Err(); err != nil {

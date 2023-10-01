@@ -9,14 +9,13 @@ param imageWithTag string = 'js2par:latest'
 param onlyDeployNginxExample bool = false
 param location string = resourceGroup().location
 param useManagedIdentity bool = false
-
+param redisCacheName string = 'redis-${projectName}-${salt}'
 param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
 param storageAccountName string = 'castrg${salt}'
 param blobContainerName string = 'parquet${salt}'
 
-// var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
-
-// var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: containerRegistryName
@@ -35,25 +34,40 @@ resource uai 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
 }
 
 
-// resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-//   name: guid(resourceGroup().id, uai.id, acrPullRole)
-//   scope: acr
-//   properties: {
-//     roleDefinitionId: acrPullRole
-//     principalId: uai.properties.principalId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
+resource redisCache 'Microsoft.Cache/Redis@2020-06-01' = {
+  name: redisCacheName
+  location: location
+  properties: {
+    enableNonSslPort: false
+    minimumTlsVersion: '1.2'
+    sku: {
+      capacity: 1
+      family: 'C'
+      name: 'Basic'
+    }
+  }
+}
 
-// resource uaiRbacStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-//   name: guid(resourceGroup().id, uai.id, storageRole)
-//   scope: sa
-//   properties: {
-//     roleDefinitionId: storageRole
-//     principalId: uai.properties.principalId
-//     principalType: 'ServicePrincipal'
-//   }
-// }
+
+resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = if(useManagedIdentity) {
+  name: guid(resourceGroup().id, uai.id, acrPullRole)
+  scope: acr
+  properties: {
+    roleDefinitionId: acrPullRole
+    principalId: uai.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource uaiRbacStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = if(useManagedIdentity) {
+  name: guid(resourceGroup().id, uai.id, storageRole)
+  scope: sa
+  properties: {
+    roleDefinitionId: storageRole
+    principalId: uai.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
 
 resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageAccountName
@@ -188,6 +202,18 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'STORAGE_CONTAINER_NAME'
               value: blobContainer.name
             }
+            {
+              name: 'REDIS_HOST'
+              value: redisCache.properties.hostName
+            }
+            {
+              name: 'REDIS_PORT'
+              value: '6380'
+            }
+            {
+              name: 'REDIS_PASSWORD'
+              value: redisCache.listKeys().primaryKey
+            }
           ]
           resources: {
             cpu: json('1')
@@ -197,7 +223,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
       scale: {
         minReplicas: 1
-        maxReplicas: 1
+        maxReplicas: 10
         rules: [
           {
             name: 'http-requests'

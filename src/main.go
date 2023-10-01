@@ -87,6 +87,7 @@ func main() {
 	log.Println(accountName)
 
 	cache, err := NewCache()
+	log.Println("Starting cache....")
 	if err != nil {
 		log.Fatal(err)
 	}

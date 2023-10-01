@@ -2,7 +2,7 @@ SALT=demo2
 L=westeurope
 RG=anbo-parjs-demo-$SALT
 ACR=anboparjscr$SALT
-az login
+
 
 az group create -n $RG -l $L
 
