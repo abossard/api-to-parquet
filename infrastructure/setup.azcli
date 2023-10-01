@@ -25,3 +25,5 @@ echo $TEST_URL
 # test
 cd tests
 go run . $TEST_URL
+# or
+source ./hammertime.sh
