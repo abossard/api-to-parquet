@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	delta "github.com/csimplestring/delta-go"
 	"github.com/gin-gonic/gin"
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/writer"
@@ -76,6 +77,10 @@ func main() {
 	if containerName == "" {
 		containerName = "superfiles"
 	}
+	dfsEndpoint := os.Getenv("DATALAKE_ENDPOINT")
+	if dfsEndpoint == "" {
+		dfsEndpoint = "https://castrgqmh6n6ngd4pj4.dfs.core.windows.net/"
+	}
 	accountName := os.Getenv("STORAGE_ACCOUNT_NAME")
 	if accountName == "" {
 		accountName = "anbofiles"
@@ -84,6 +89,12 @@ func main() {
 	if accountKey == "" {
 		accountKey = ""
 	}
+
+	format := os.Getenv("FORMAT")
+	if format == "" {
+		format = "PARQUET"
+	}
+
 	log.Println(accountName)
 
 	cache, err := NewCache()
@@ -123,42 +134,8 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Print("Got Azure Credentials")
-
 	log.Print("Got Blob Client")
-	// generate a TimeseriesData with a for loop
-	var data []TimeSeriesData
-	for i := 0; i < 1000; i++ {
-		data = append(data, TimeSeriesData{
-			Timestamp:       time.Now().Unix(),
-			TimeOffsetHours: 0,
-			PointId:         "PointId",
-			Sequence:        0,
-			Project:         "Project",
-			Res:             "Res",
-			Quality:         0,
-			Value:           float64(i),
-		})
-	}
-
-	tmpFile, err := os.CreateTemp(os.TempDir(), "myfile")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(tmpFile.Name())
-	saveTimeseriesToParquetFile(tmpFile, data)
-	tmpFile.Close()
-
-	// reopen tmpFile
-	tmpFile, err = os.Open(tmpFile.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer tmpFile.Close()
-	response, err := blobClient.UploadFile(context.TODO(), containerName, "myfile2.parquet", tmpFile, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Print(response)
+	// TEST Delta Lake API
 
 	router := gin.Default()
 	router.Use(gin.Logger())
@@ -170,6 +147,7 @@ func main() {
 			"lastTimeGenerated": lastTimeGenerated,
 		})
 	})
+
 	router.POST("/", func(c *gin.Context) {
 		var newRecord input_record
 
@@ -177,26 +155,7 @@ func main() {
 			c.AbortWithError(500, err)
 			return
 		}
-
-		tmpFile, err := os.CreateTemp(os.TempDir(), newRecord.File)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer os.Remove(tmpFile.Name())
-		saveTimeseriesToParquetFile(tmpFile, newRecord.Content)
-		tmpFile.Close()
-
-		// reopen tmpFile
-		tmpFile, err = os.Open(tmpFile.Name())
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer tmpFile.Close()
-		response, err := blobClient.UploadFile(context.TODO(), containerName, newRecord.File, tmpFile, nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Print(response)
+		saveTimeseriesToBlobStorage(newRecord, containerName, blobClient)
 
 		cache.Set(lastTimeGeneratedKey, newRecord.TimeGenerated, years100)
 
@@ -206,4 +165,35 @@ func main() {
 		})
 	})
 	router.Run(":8080")
+}
+
+func saveTimeseriesToBlobStorage(newRecord input_record, containerName string, blobClient *azblob.Client) error {
+	// Create a temporary file to store the timeseries data
+	tmpFile, err := os.CreateTemp(os.TempDir(), newRecord.File)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpFile.Name())
+
+	// Save the timeseries data to a Parquet file
+	if err := saveTimeseriesToParquetFile(tmpFile, newRecord.Content); err != nil {
+		return err
+	}
+	tmpFile.Close()
+
+	// Reopen the temporary file
+	tmpFile, err = os.Open(tmpFile.Name())
+	if err != nil {
+		return err
+	}
+	defer tmpFile.Close()
+
+	// Upload the Parquet file to Azure Blob Storage
+	response, err := blobClient.UploadFile(context.TODO(), containerName, newRecord.File, tmpFile, nil)
+	if err != nil {
+		return err
+	}
+	log.Print(response)
+
+	return nil
 }

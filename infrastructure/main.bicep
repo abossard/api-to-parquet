@@ -199,6 +199,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
               value: sa.name
             }
             {
+              name: 'DATALAKE_ENDPOINT'
+              value: sa.properties.primaryEndpoints.dfs
+            }
+            {
               name: 'STORAGE_CONTAINER_NAME'
               value: blobContainer.name
             }
@@ -223,7 +227,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
       scale: {
         minReplicas: 1
-        maxReplicas: 10
+        maxReplicas: 50
         rules: [
           {
             name: 'http-requests'
