@@ -32,9 +32,6 @@ jobs:
         with:
           creds: ${{ secrets.CAJSONTOPARQUETQMH6N6NGD4PJ4_AZURE_CREDENTIALS }}
 
-      - name: Create Resource Group
-        run: |
-          az group create --name $RG --location $L
       - name: Create Deployment
         run: |
           az deployment group create --resource-group $RG --template-file infrastructure/main.bicep --parameters containerRegistryName=$ACR
