@@ -13,6 +13,7 @@ param redisCacheName string = 'redis-${projectName}-${salt}'
 param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
 param storageAccountName string = 'castrg${salt}'
 param blobContainerName string = 'parquet${salt}'
+param deployApps bool = true
 
 var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
 var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
@@ -139,7 +140,7 @@ resource redisCaEnvStorage 'Microsoft.App/managedEnvironments/storages@2023-05-0
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
+resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps) {
   name: containerAppName
   location: location
   identity: {
@@ -243,4 +244,4 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   }
 }
 
-output containerAppFQDN string = containerApp.properties.configuration.ingress.fqdn
+output containerAppFQDN string = (deployApps) ? containerApp.properties.configuration.ingress.fqdn : 'https://<containerAppFQDN>'

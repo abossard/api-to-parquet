@@ -1,0 +1,43 @@
+name: Trigger auto deployment for ca-jsontoparquet-qmh6n6ngd4pj4
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'infrastructure/**'
+    - '.github/workflows/infra.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+env:
+  SALT: demo2
+  L: westeurope
+  RG: anbo-parjs-demo-$SALT
+  ACR: anboparjscr$SALT
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.CAJSONTOPARQUETQMH6N6NGD4PJ4_AZURE_CREDENTIALS }}
+
+      - name: Create Resource Group
+        run: |
+          az group create --name $RG --location $L
+      - name: Create Deployment
+        run: |
+          az deployment group create --resource-group $RG --template-file infrastructure/main.bicep --parameters containerRegistryName=$ACR
+          TEST_URL=https://$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.containerAppFQDN.value -o tsv)
+          echo $TEST_URL
+        
