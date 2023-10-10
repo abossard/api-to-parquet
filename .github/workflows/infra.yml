@@ -1,4 +1,4 @@
-name: Trigger auto deployment for ca-jsontoparquet-qmh6n6ngd4pj4
+name: Trigger Infra
 
 # When this action will be executed
 on:
