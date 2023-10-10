@@ -21,7 +21,7 @@ content-type: application/json
 
 GET http://localhost:8080/ HTTP/1.1
 ###
-POST https://ca-jsontoparquet-cnfg6rri5hakw.reddesert-df123858.westeurope.azurecontainerapps.io/
+POST https://ca-jsontoparquet-qmh6n6ngd4pj4.victorioussky-4b237966.westeurope.azurecontainerapps.io
 content-type: application/json
 
 {
@@ -35,7 +35,7 @@ content-type: application/json
         "timestamp": {{$timestamp}},
         "value": {{$randomInt 1 43}}
     }],
-    "file": "{{$timestamp}}-{{$guid}}",
+    "file": "2023/10/11/{{$timestamp}}-{{$guid}}",
     "timeGenerated": {{$timestamp}},
     "id": "{{$guid}}"
 }
