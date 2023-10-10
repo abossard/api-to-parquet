@@ -127,7 +127,7 @@ func main() {
 	log.Print("Got Azure Credentials")
 
 	log.Print("Got Blob Client")
-	// generate a TimeseriesData with a for loop
+
 	var data []TimeSeriesData
 	for i := 0; i < 1000; i++ {
 		data = append(data, TimeSeriesData{
