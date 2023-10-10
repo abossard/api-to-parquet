@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	md5 "crypto/md5"
+	"encoding/hex"
 	"log"
 	"os"
 	"time"
@@ -154,7 +156,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer tmpFile.Close()
-	response, err := blobClient.UploadFile(context.TODO(), containerName, "myfile2.parquet", tmpFile, nil)
+	response, err := blobClient.UploadFile(context.TODO(), containerName, "startup_test.parquet", tmpFile, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -171,6 +173,7 @@ func main() {
 		})
 	})
 	router.POST("/", func(c *gin.Context) {
+		log.Printf("Request information: %+v", c.Request)
 		var newRecord input_record
 
 		if err := c.BindJSON(&newRecord); err != nil {
@@ -178,7 +181,15 @@ func main() {
 			return
 		}
 
-		tmpFile, err := os.CreateTemp(os.TempDir(), newRecord.File)
+		log.Printf("New record statistics: entries=%d, first_timestamp=%v, last_timestamp=%v, file=%s, time_generated=%v",
+			len(newRecord.Content), newRecord.Content[0].Timestamp, newRecord.Content[len(newRecord.Content)-1].Timestamp, newRecord.File, newRecord.TimeGenerated)
+
+		// md5 hash on newRecord.File
+		hasher := md5.New()
+		hasher.Write([]byte(newRecord.File))
+		hashedFileName := hex.EncodeToString(hasher.Sum(nil))
+
+		tmpFile, err := os.CreateTemp(os.TempDir(), hashedFileName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -193,10 +204,11 @@ func main() {
 		}
 		defer tmpFile.Close()
 		response, err := blobClient.UploadFile(context.TODO(), containerName, newRecord.File, tmpFile, nil)
+
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Print(response)
+		log.Printf("Uploaded file to blob storage. With Request ID: %+v", response.RequestID)
 
 		cache.Set(lastTimeGeneratedKey, newRecord.TimeGenerated, years100)
 

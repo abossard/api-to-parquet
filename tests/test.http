@@ -12,7 +12,7 @@ content-type: application/json
         "timestamp": {{$timestamp}},
         "value": {{$randomInt 1 43}}
     }],
-    "file": "{{$timestamp}}-{{$guid}}",
+    "file": "2023/10/11/{{$timestamp}}-{{$guid}}.parquet",
     "timeGenerated": {{$timestamp}},
     "id": "{{$guid}}"
 }
