@@ -86,7 +86,11 @@ func main() {
 	if accountKey == "" {
 		accountKey = ""
 	}
-	log.Println(accountName)
+
+	omitStartUpCheck := os.Getenv("OMIT_STARTUP_CHECK")
+	if omitStartUpCheck == "" {
+		omitStartUpCheck = ""
+	}
 
 	cache, err := NewCache()
 	log.Println("Starting cache....")
@@ -95,13 +99,6 @@ func main() {
 	}
 	// put the maximum duration of 100 years
 	years100 := time.Duration(100 * 365 * 24 * time.Hour)
-
-	cache.Set("foo", "bar", years100)
-	var value string
-	cache.Get("foo", &value)
-	if value != "bar" {
-		log.Fatal("value not found, cache not working")
-	}
 
 	var blobClient *azblob.Client
 
@@ -128,40 +125,48 @@ func main() {
 
 	log.Print("Got Blob Client")
 
-	var data []TimeSeriesData
-	for i := 0; i < 1000; i++ {
-		data = append(data, TimeSeriesData{
-			Timestamp:       time.Now().Unix(),
-			TimeOffsetHours: 0,
-			PointId:         "PointId",
-			Sequence:        0,
-			Project:         "Project",
-			Res:             "Res",
-			Quality:         0,
-			Value:           float64(i),
-		})
-	}
+	if omitStartUpCheck == "" {
+		cache.Set("foo", "bar", years100)
+		var value string
+		cache.Get("foo", &value)
+		if value != "bar" {
+			log.Fatal("value not found, cache not working")
+		}
 
-	tmpFile, err := os.CreateTemp(os.TempDir(), "myfile")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(tmpFile.Name())
-	saveTimeseriesToParquetFile(tmpFile, data)
-	tmpFile.Close()
+		var data []TimeSeriesData
+		for i := 0; i < 1000; i++ {
+			data = append(data, TimeSeriesData{
+				Timestamp:       time.Now().Unix(),
+				TimeOffsetHours: 0,
+				PointId:         "PointId",
+				Sequence:        0,
+				Project:         "Project",
+				Res:             "Res",
+				Quality:         0,
+				Value:           float64(i),
+			})
+		}
 
-	// reopen tmpFile
-	tmpFile, err = os.Open(tmpFile.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer tmpFile.Close()
-	response, err := blobClient.UploadFile(context.TODO(), containerName, "startup_test.parquet", tmpFile, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Print(response)
+		tmpFile, err := os.CreateTemp(os.TempDir(), "myfile")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer os.Remove(tmpFile.Name())
+		saveTimeseriesToParquetFile(tmpFile, data)
+		tmpFile.Close()
 
+		// reopen tmpFile
+		tmpFile, err = os.Open(tmpFile.Name())
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer tmpFile.Close()
+		response, err := blobClient.UploadFile(context.TODO(), containerName, "startup_test.parquet", tmpFile, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Print(response)
+	}
 	router := gin.Default()
 	router.Use(gin.Logger())
 	router.GET("/", func(c *gin.Context) {

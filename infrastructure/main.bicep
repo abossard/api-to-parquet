@@ -187,6 +187,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           image: onlyDeployNginxExample ? 'nginx' : '${acr.properties.loginServer}/${imageWithTag}' 
           env: [
             {
+              name: 'OMIT_STARTUP_CHECK'
+              value: 'true'
+            }
+            {
               name: 'STORAGE_ACCOUNT_KEY'
               secretRef: 'storageaccountkey'
             }
