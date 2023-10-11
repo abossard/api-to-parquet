@@ -56,10 +56,14 @@ func main() {
 	fmt.Println("HTTP response status:", resp.Status)
 }
 
+func generateFileName() string {
+	now := time.Now()
+	return fmt.Sprintf("/tests/%d/%02d/%02d/%02d/%s.parquet", now.Year(), now.Month(), now.Day(), now.Hour(), generateGUID())
+}
+
 func generateData() InputRecord {
 	// Generate a random ID and file name
 	id := generateGUID()
-	file := fmt.Sprintf("%d-%s", time.Now().Unix(), generateGUID())
 
 	// Generate three random time series data points
 	var content []TimeSeriesData
@@ -81,7 +85,7 @@ func generateData() InputRecord {
 		Content:       content,
 		Id:            id,
 		TimeGenerated: time.Now().UnixNano() / int64(time.Millisecond),
-		File:          file,
+		File:          generateFileName(),
 	}
 }
 
