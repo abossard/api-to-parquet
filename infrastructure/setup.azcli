@@ -10,7 +10,7 @@ az group create -n $RG -l $L
 az deployment group create --resource-group $RG \
     --template-file infrastructure/main.bicep \
     --parameters containerRegistryName=$ACR \
-    --parameters onlyDeployNginxExample=true
+    --parameters deployApps=false
 
 # build and push image
 az acr build -r $ACR -t js2par:latest -f src/Dockerfile src

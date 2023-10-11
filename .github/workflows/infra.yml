@@ -3,14 +3,14 @@ name: Trigger Infra
 # When this action will be executed
 on:
   # Automatically trigger it when detected changes in repo
-  push:
-    branches: 
-      [ main ]
-    paths:
-    - 'infrastructure/**'
-    - '.github/workflows/infra.yml'
+  # push:
+  #   branches: 
+  #     [ main ]
+  #   paths:
+  #   - 'infrastructure/**'
+  #   - '.github/workflows/infra.yml'
 
-  # Allow manual trigger 
+  # # Allow manual trigger 
   workflow_dispatch:
       
 env:
