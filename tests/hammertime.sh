@@ -8,7 +8,7 @@ max_parallel=10
 
 # Define a function to run a command in the background
 run_command() {
-  go run . "$1" &
+  ./test_poc "$1" &
 }
 
 # Loop through the number of commands to run
