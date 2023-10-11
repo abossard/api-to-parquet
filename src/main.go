@@ -185,6 +185,26 @@ func main() {
 			c.AbortWithError(500, err)
 			return
 		}
+		if newRecord.File == "" {
+			c.JSON(400, gin.H{"error": "Malformed request: property file is empty"})
+			return
+		}
+
+		if newRecord.TimeGenerated == 0 {
+			c.JSON(400, gin.H{"error": "Malformed request: property timeGenerated is empty"})
+			return
+		}
+
+		if newRecord.Id == "" {
+			c.JSON(400, gin.H{"error": "Malformed request: property id is empty"})
+			return
+		}
+
+		if len(newRecord.Content) > 0 {
+			log.Printf("First time series data point: %+v", newRecord.Content[0])
+		} else {
+			log.Printf("No time series data points")
+		}
 
 		log.Printf("New record statistics: entries=%d, first_timestamp=%v, last_timestamp=%v, file=%s, time_generated=%v",
 			len(newRecord.Content), newRecord.Content[0].Timestamp, newRecord.Content[len(newRecord.Content)-1].Timestamp, newRecord.File, newRecord.TimeGenerated)
