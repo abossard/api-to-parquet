@@ -2,16 +2,38 @@ POST http://localhost:8080/ HTTP/1.1
 content-type: application/json
 
 {
-    "content": [{
-        "timestamp": {{$timestamp}},
-        "value": {{$randomInt 1 43}}
-    },{
-        "timestamp": {{$timestamp}},
-        "value": {{$randomInt 1 43}}
-    },{
-        "timestamp": {{$timestamp}},
-        "value": {{$randomInt 1 43}}
-    }],
+    "content": [
+        {
+            "timestamp": {{$timestamp}},
+            "value": {{$randomInt 1 43}},
+            "timeOffsetHours": {{$randomInt 1 43}},
+            "pointId": "{{$guid}}",
+            "sequence": {{$randomInt 1 43}},
+            "project": "{{$guid}}",
+            "res": "{{$guid}}",
+            "quality": {{$randomInt 1 43}}
+        },
+        {
+            "timestamp": {{$timestamp}},
+            "value": {{$randomInt 1 43}},
+            "timeOffsetHours": {{$randomInt 1 43}},
+            "pointId": "{{$guid}}",
+            "sequence": {{$randomInt 1 43}},
+            "project": "{{$guid}}",
+            "res": "{{$guid}}",
+            "quality": {{$randomInt 1 43}}
+        },
+        {
+            "timestamp": {{$timestamp}},
+            "value": {{$randomInt 1 43}},
+            "timeOffsetHours": {{$randomInt 1 43}},
+            "pointId": "{{$guid}}",
+            "sequence": {{$randomInt 1 43}},
+            "project": "{{$guid}}",
+            "res": "{{$guid}}",
+            "quality": {{$randomInt 1 43}}
+        }
+    ],
     "file": "2023/10/11/{{$timestamp}}-{{$guid}}.parquet",
     "timeGenerated": {{$timestamp}},
     "id": "{{$guid}}"
@@ -21,7 +43,7 @@ content-type: application/json
 
 GET http://localhost:8080/ HTTP/1.1
 ###
-POST https://ca-jsontoparquet-qmh6n6ngd4pj4.victorioussky-4b237966.westeurope.azurecontainerapps.io
+POST http://localhost:8080/ HTTP/1.1
 content-type: application/json
 
 {
@@ -35,7 +57,7 @@ content-type: application/json
         "timestamp": {{$timestamp}},
         "value": {{$randomInt 1 43}}
     }],
-    "file": "2023/10/11/{{$timestamp}}-{{$guid}}",
+    "fileXXXXX": "2023/10/11/{{$timestamp}}-{{$guid}}",
     "timeGenerated": {{$timestamp}},
     "id": "{{$guid}}"
 }

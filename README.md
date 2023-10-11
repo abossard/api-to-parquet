@@ -2,6 +2,50 @@
 
 This is a Go application that processes time series data and saves it to a Parquet file. The application uses a cache to store previously processed data and avoid duplicate writes to the Parquet file.
 
+## Expected JSON Request
+```
+POST http://localhost:8080/ HTTP/1.1
+content-type: application/json
+
+{
+    "content": [
+        {
+            "timestamp": {{$timestamp}},
+            "value": {{$randomInt 1 43}},
+            "timeOffsetHours": {{$randomInt 1 43}},
+            "pointId": "{{$guid}}",
+            "sequence": {{$randomInt 1 43}},
+            "project": "{{$guid}}",
+            "res": "{{$guid}}",
+            "quality": {{$randomInt 1 43}}
+        },
+        {
+            "timestamp": {{$timestamp}},
+            "value": {{$randomInt 1 43}},
+            "timeOffsetHours": {{$randomInt 1 43}},
+            "pointId": "{{$guid}}",
+            "sequence": {{$randomInt 1 43}},
+            "project": "{{$guid}}",
+            "res": "{{$guid}}",
+            "quality": {{$randomInt 1 43}}
+        },
+        {
+            "timestamp": {{$timestamp}},
+            "value": {{$randomInt 1 43}},
+            "timeOffsetHours": {{$randomInt 1 43}},
+            "pointId": "{{$guid}}",
+            "sequence": {{$randomInt 1 43}},
+            "project": "{{$guid}}",
+            "res": "{{$guid}}",
+            "quality": {{$randomInt 1 43}}
+        }
+    ],
+    "file": "2023/10/11/{{$timestamp}}-{{$guid}}.parquet",
+    "timeGenerated": {{$timestamp}},
+    "id": "{{$guid}}"
+}
+```
+
 ## File Structure
 
 The file structure of the project is as follows:
