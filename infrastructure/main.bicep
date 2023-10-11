@@ -49,6 +49,16 @@ resource redisCache 'Microsoft.Cache/Redis@2020-06-01' = {
   }
 }
 
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02-preview' = {
+  name: 'ai-${containerAppName}'
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+  }
+}
+
 resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = if(useManagedIdentity) {
   name: guid(resourceGroup().id, uai.id, acrPullRole)
   scope: acr
