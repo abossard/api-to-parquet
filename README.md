@@ -45,10 +45,10 @@ content-type: application/json
     "id": "{{$guid}}"
 }
 ```
-`content`: Contains the data that is being written to parquet
-`file`: is the filename that is used when the output blob is created. If there is an existing blob, it will be overwritten with the new data
-`timeGenerated`: is being used as the `lastTimeGenerated` when the `/` is being called
-`id`: Doesn't have a purpose yet
+- `content`: Contains the data that is being written to parquet
+- `file`: is the filename that is used when the output blob is created. If there is an existing blob, it will be overwritten with the new data
+- `timeGenerated`: is being used as the `lastTimeGenerated` when the `/` is being called
+- `id`: Doesn't have a purpose yet
 
 ## File Structure
 
