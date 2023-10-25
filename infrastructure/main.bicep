@@ -171,13 +171,13 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
       ]
       ingress: {
         external: true
-        ipSecurityRestrictions:[
-          {
-            name: 'allowAll'
-            action: 'Allow'
-            ipAddressRange: '*'
-          }
-        ]
+        // ipSecurityRestrictions:[
+        //   {
+        //     name: 'allowAll'
+        //     action: 'Allow'
+        //     ipAddressRange: '10.0.0.1/20'
+        //   }
+        // ]
         targetPort: onlyDeployNginxExample ? 80: 8080
         allowInsecure: false
         traffic: [
