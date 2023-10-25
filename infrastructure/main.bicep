@@ -13,6 +13,7 @@ param redisCacheName string = 'redis-${projectName}-${salt}'
 param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
 param storageAccountName string = 'castrg${salt}'
 param blobContainerName string = 'parquet${salt}'
+param apiKeyToUse string = uniqueString(resourceGroup().id, deployment().name)
 param deployApps bool = true
 
 var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
@@ -170,6 +171,13 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
       ]
       ingress: {
         external: true
+        ipSecurityRestrictions:[
+          {
+            name: 'allowAll'
+            action: 'Allow'
+            ipAddressRange: '*'
+          }
+        ]
         targetPort: onlyDeployNginxExample ? 80: 8080
         allowInsecure: false
         traffic: [
@@ -215,6 +223,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
               value: '6380'
             }
             {
+              name: 'REQUIRE_API_KEY'
+              value: apiKeyToUse
+            }
+            {
               name: 'REDIS_PASSWORD'
               value: redisCache.listKeys().primaryKey
             }
@@ -244,3 +256,4 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
 }
 
 output containerAppFQDN string = (deployApps) ? containerApp.properties.configuration.ingress.fqdn : 'https://<containerAppFQDN>'
+output apiKey string = apiKeyToUse

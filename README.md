@@ -2,6 +2,10 @@
 
 This is a Go application that processes time series data and saves it to a Parquet file. The application uses a cache to store previously processed data and avoid duplicate writes to the Parquet file.
 
+## Roadmap
+[x] Secret token concept for the API, e.g. REQUIRE_API_KEY=abcdefghs
+[ ] Data verfication method?
+
 ## Expected JSON Request
 ```
 POST http://localhost:8080/ HTTP/1.1
@@ -74,6 +78,7 @@ The file structure of the project is as follows:
 To use the application, you need to set the following environment variables:
 
 - `STORAGE_ACCOUNT_NAME`: The name of the storage account to use for writing the Parquet file. Defaults to "anbofiles".
+- `REQUIRE_API_KEY`: The API key that must be provided in the request header as `key` in the URL
 - `REDIS_HOST`: The hostname of the Redis server to use for caching. Required.
 - `REDIS_PORT`: The port number of the Redis server to use for caching. Required.
 - `REDIS_PASSWORD`: The password of the Redis server to use for caching. Optional.
@@ -86,6 +91,11 @@ go run .
 ```
 
 The application will process the time series data and save it to a Parquet file. The cache will be used to avoid duplicate writes to the Parquet file.
+
+## API Security
+It's possible to configure the API to require a secret token to be provided in the request header as `key` in the URL. This is done by setting the environment variable `REQUIRE_API_KEY` to a secret token. If this environment variable is not set, the API will not require a secret token.
+
+On top of that you can always enable OIDC on the Azure Container App level.
 
 ## Authentication to Azure Storage
 

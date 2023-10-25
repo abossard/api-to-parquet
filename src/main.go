@@ -5,6 +5,7 @@ import (
 	md5 "crypto/md5"
 	"encoding/hex"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -50,10 +51,9 @@ func saveTimeseriesToParquetFile(file *os.File, data []TimeSeriesData) error {
 	return nil
 }
 
-// album represents data about a record album.
 type TimeSeriesData struct {
 	Timestamp       int64   `parquet:"name=Timestamp, type=INT64"`
-	TimeOffsetHours int8    `parquet:"name=TimeOffsetHours, type=INT64"`
+	TimeOffsetHours int64   `parquet:"name=TimeOffsetHours, type=INT64"`
 	PointId         string  `parquet:"name=PointId,  type=BYTE_ARRAY, convertedtype=UTF8"`
 	Sequence        int32   `parquet:"name=Sequence, type=INT64"`
 	Project         string  `parquet:"name=Project,  type=BYTE_ARRAY, convertedtype=UTF8"`
@@ -68,6 +68,17 @@ type input_record struct {
 	Source        string           `json:"source"`
 	TimeGenerated int64            `json:"timeGenerated"`
 	File          string           `json:"file"`
+}
+
+func KeyRequired(keyToCompareWith string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Print("Checking API key")
+		suppliedKey := c.Query("key")
+		if suppliedKey != keyToCompareWith {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		}
+		c.Next()
+	}
 }
 
 const lastTimeGeneratedKey = "lastTimestamp"
@@ -86,7 +97,10 @@ func main() {
 	if accountKey == "" {
 		accountKey = ""
 	}
-
+	requireApiKey := os.Getenv("REQUIRE_API_KEY")
+	if requireApiKey == "" {
+		requireApiKey = ""
+	}
 	omitStartUpCheck := os.Getenv("OMIT_STARTUP_CHECK")
 	if omitStartUpCheck == "" {
 		omitStartUpCheck = ""
@@ -169,6 +183,14 @@ func main() {
 	}
 	router := gin.Default()
 	router.Use(gin.Logger())
+
+	if requireApiKey != "" {
+		log.Println("Using API key")
+		router.Use(KeyRequired(requireApiKey))
+	} else {
+		log.Println("No API key specified with REQUIRE_API_KEY environment variable, not using one.")
+	}
+
 	router.GET("/", func(c *gin.Context) {
 		var lastTimeGenerated int64
 		cache.Get(lastTimeGeneratedKey, &lastTimeGenerated)

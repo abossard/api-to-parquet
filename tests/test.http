@@ -41,9 +41,9 @@ content-type: application/json
 
 ###
 
-GET http://localhost:8080/ HTTP/1.1
+GET http://localhost:8080/?key=123 HTTP/1.1
 ###
-POST http://localhost:8080/ HTTP/1.1
+POST https://cs-jsontoparquet-3b3rkdfzwqij4.wonderfulsea-1fb27218.westeurope.azurecontainerapps.io/ HTTP/1.1
 content-type: application/json
 
 {
