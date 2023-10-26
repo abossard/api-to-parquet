@@ -35,6 +35,8 @@ func main() {
 	}
 	url := os.Args[1]
 
+	fmt.Println("URL:", url)
+
 	// Generate random data
 	data := generateData()
 

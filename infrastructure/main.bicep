@@ -15,9 +15,39 @@ param storageAccountName string = 'castrg${salt}'
 param blobContainerName string = 'parquet${salt}'
 param apiKeyToUse string = uniqueString(resourceGroup().id, deployment().name)
 param deployApps bool = true
+param synapseWorkspaceName string = 'synapse-${projectName}-${salt}'
 
 var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
 var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+
+resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01-preview' = {
+  name: synapseWorkspaceName
+  location: location
+  identity: {
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${uai.id}': {}
+    }
+  }
+  properties: {
+    defaultDataLakeStorage: {
+      accountUrl: 'https://${storageAccountName}.dfs.${environment().suffixes.azureDatalakeStoreFileSystem}'
+      filesystem: blobContainerName
+      resourceId: sa.id
+      createManagedPrivateEndpoint: false
+    }
+    azureADOnlyAuthentication: true
+  }
+}
+
+resource synapseAllowAll 'Microsoft.Synapse/workspaces/firewallrules@2021-06-01-preview' = {
+  parent: synapseWorkspace
+  name: 'allowAll'
+  properties: {
+    startIpAddress: '0.0.0.0'
+    endIpAddress: '255.255.255.255'
+  }
+}
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: containerRegistryName
@@ -35,7 +65,6 @@ resource uai 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   location: location
 }
 
-
 resource redisCache 'Microsoft.Cache/Redis@2020-06-01' = {
   name: redisCacheName
   location: location
@@ -50,7 +79,7 @@ resource redisCache 'Microsoft.Cache/Redis@2020-06-01' = {
   }
 }
 
-resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = if(useManagedIdentity) {
+resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useManagedIdentity) {
   name: guid(resourceGroup().id, uai.id, acrPullRole)
   scope: acr
   properties: {
@@ -60,7 +89,7 @@ resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = if(useMa
   }
 }
 
-resource uaiRbacStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = if(useManagedIdentity) {
+resource uaiRbacStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useManagedIdentity) {
   name: guid(resourceGroup().id, uai.id, storageRole)
   scope: sa
   properties: {
@@ -99,8 +128,7 @@ resource redisShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-
 resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
   name: blobContainerName
   parent: blobServices
-  properties: {
-  }
+  properties: {}
 }
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
@@ -155,14 +183,14 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
       secrets: [
         {
           name: 'myregistrypassword'
-          value:  acr.listCredentials().passwords[0].value
+          value: acr.listCredentials().passwords[0].value
         }
         {
           name: 'storageaccountkey'
           value: sa.listKeys().keys[0].value
         }
       ]
-      registries: [ 
+      registries: [
         {
           server: acr.properties.loginServer
           username: acr.listCredentials().username
@@ -178,7 +206,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
         //     ipAddressRange: '10.0.0.1/20'
         //   }
         // ]
-        targetPort: onlyDeployNginxExample ? 80: 8080
+        targetPort: onlyDeployNginxExample ? 80 : 8080
         allowInsecure: false
         traffic: [
           {
@@ -192,7 +220,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
       containers: [
         {
           name: containerAppName
-          image: onlyDeployNginxExample ? 'nginx' : '${acr.properties.loginServer}/${imageWithTag}' 
+          image: onlyDeployNginxExample ? 'nginx' : '${acr.properties.loginServer}/${imageWithTag}'
           env: [
             {
               name: 'OMIT_STARTUP_CHECK'

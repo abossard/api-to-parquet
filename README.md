@@ -54,6 +54,16 @@ content-type: application/json
 - `timeGenerated`: is being used as the `lastTimeGenerated` when the `/` is being called
 - `id`: Doesn't have a purpose yet
 
+## Examples Synapse Query
+```
+SELECT TOP 100 *
+FROM
+    OPENROWSET(
+        BULK 'https://ACCOUNTNAME.blob.core.windows.net/CONTAINERNAME/tests/2023/10/26/19/*.parquet',
+        FORMAT='PARQUET'
+    ) AS data
+```
+
 ## File Structure
 
 The file structure of the project is as follows:
