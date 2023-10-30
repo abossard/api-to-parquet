@@ -173,15 +173,6 @@ resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01
   name: 'default'
 }
 
-resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01' = {
-  parent: sa
-  name: 'default'
-}
-resource redisShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = {
-  parent: fileServices
-  name: 'redis'
-}
-
 resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
   name: blobContainerName
   parent: blobServices
@@ -211,19 +202,6 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
     }
     vnetConfiguration: {
       infrastructureSubnetId: vnet::containerappSubnet.id
-    }
-  }
-}
-
-resource redisCaEnvStorage 'Microsoft.App/managedEnvironments/storages@2023-05-01' = {
-  parent: containerAppEnv
-  name: redisShare.name
-  properties: {
-    azureFile: {
-      accountName: sa.name
-      shareName: redisShare.name
-      accessMode: 'ReadWrite'
-      accountKey: sa.listKeys().keys[0].value
     }
   }
 }

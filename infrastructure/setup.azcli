@@ -1,6 +1,6 @@
 # to deploy do the following steps:
 # NEW Deployment: 0, 1, 2, 3, 4, 5
-# UPDATE Deployment: 3, 4, 5
+# UPDATE Deployment: 0, 3, 4, 5
 
 # 0: define some initial variables
 SALT=demo4
