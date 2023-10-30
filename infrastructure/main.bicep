@@ -4,31 +4,47 @@ param salt string = uniqueString(resourceGroup().id)
 @description('The name of the project. Used to generate names.')
 param projectName string = 'jsontoparquet'
 
-// some default names
-param containerAppName string = 'ca-${projectName}-${salt}'
-param containerRegistryName string = 'acr${salt}'
-param containerAppEnvName string = 'caenvvnet-${projectName}-${salt}'
+@description('The image to use for the container app.')
 param imageWithTag string = 'js2par:latest'
-param location string = resourceGroup().location
-param useManagedIdentity bool = false
-param redisCacheName string = 'redis-${projectName}-${salt}'
-param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
-param storageAccountName string = 'castrg${salt}'
-param blobContainerName string = 'parquet${salt}'
-param apiKeyToUse string = uniqueString(resourceGroup().id, deployment().name)
-param deployApps bool = true
-param synapseWorkspaceName string = 'synapse-${projectName}-${salt}'
-param deploySynapse bool = false
-param vnetName string = 'anboapip-${projectName}-${salt}'
 
-var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
-var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+@description('The location to deploy to.')
+param location string = resourceGroup().location
+
+@description('The environment to deploy to.')
+param useManagedIdentity bool = false
+
+@description('Should it deploy Synapse?')
+param deploySynapse bool = false
+
+@description('Should it deploy the container app?')
+param deployApps bool = true
+
+@description('The API key to use for the container app. Or empty for none.')
+param apiKeyToUse string = uniqueString(resourceGroup().id, deployment().name)
+
+@description('Should it enable IP whitelisting?')
+param enableIpWhitelist bool = true
+
+@description('The IP whitelist. Comma separated list of IPs.')
+param ipWhitelist string = ''
 
 @description('The address space for the vnet')
 param vnetAddressSpace string = '10.144.0.0/20'
 
-param enableIpWhitelist bool = true
-param ipWhitelist string = ''
+
+// some default names
+param containerAppName string = 'ca-${projectName}-${salt}'
+param containerRegistryName string = 'acr${salt}'
+param containerAppEnvName string = 'caenvvnet-${projectName}-${salt}'
+param redisCacheName string = 'redis-${projectName}-${salt}'
+param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
+param storageAccountName string = 'castrg${salt}'
+param blobContainerName string = 'parquet${salt}'
+param synapseWorkspaceName string = 'synapse-${projectName}-${salt}'
+param vnetName string = 'anboapip-${projectName}-${salt}'
+
+var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
 
 param containerAppSubnetName string = 'containerapp'
 
@@ -357,5 +373,7 @@ resource nsgAllowIpWhitelist 'Microsoft.Network/networkSecurityGroups@2023-05-01
   }
 }
 
-output containerAppFQDN string = (deployApps) ? containerApp.properties.configuration.ingress.fqdn : 'https://<containerAppFQDN>'
+var keyAppendix = length(apiKeyToUse) > 0 ? '?key=${apiKeyToUse}' : ''
+output containerAppFQDN string = (deployApps) ? '${containerApp.properties.configuration.ingress.fqdn}${keyAppendix}' : 'https://<containerAppFQDN>'
+output containerAppStaticIP string = containerAppEnv.properties.staticIp
 output apiKey string = apiKeyToUse

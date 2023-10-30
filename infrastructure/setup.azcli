@@ -1,12 +1,14 @@
+# 0: define some initial variables
 SALT=demo4
 L=westeurope
 RG=anbo-parjs-demo-$SALT
 ACR=anboparjscr$SALT
 ALLOWED_IPS=$(curl https://ipecho.net/plain)
 
+# 1: create the resource group
 az group create -n $RG -l $L
 
-# initial deployment
+# 2: initial deployment
 az deployment group create --resource-group $RG \
     --template-file infrastructure/main.bicep \
     --parameters containerRegistryName=$ACR \
@@ -14,12 +16,10 @@ az deployment group create --resource-group $RG \
     --parameters enableIpWhitelist=true \
     --parameters ipWhitelist=$ALLOWED_IPS
 
-# build and push image
+# 3: build and push image
 az acr build -r $ACR -t js2par:latest -f src/Dockerfile src
 
-az deployment group show --name main  --resource-group $RG  --query properties.outputs
-# put containerAppFQDN to a variable
-
+# 4: perpetual deployment
 az deployment group create --resource-group $RG \
     --template-file infrastructure/main.bicep \
     --parameters containerRegistryName=$ACR \
@@ -27,12 +27,15 @@ az deployment group create --resource-group $RG \
     --parameters enableIpWhitelist=true \
     --parameters ipWhitelist=$ALLOWED_IPS
 
-TEST_URL=https://$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.containerAppFQDN.value -o tsv)
-TEST_KEY=$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.apiKey.value -o tsv)
-echo "${TEST_URL}?key=${TEST_KEY}"
+# 5: get the url
+URL=https://$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.containerAppFQDN.value -o tsv)
+IP=$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.containerAppStaticIP.value -o tsv)
+KEY=$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.apiKey.value -o tsv)
+
+echo $URL
+echo $IP
+echo $KEY
 
 # test
 cd tests
-go run . $TEST_URL
-# or
-source ./hammertime.sh
+go run . $URL

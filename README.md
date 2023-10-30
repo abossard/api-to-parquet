@@ -4,7 +4,10 @@ This is a Go application that processes time series data and saves it to a Parqu
 
 ## Roadmap
 [x] Secret token concept for the API, e.g. REQUIRE_API_KEY=abcdefghs
-[ ] Data verfication method?
+[x] Data verfication method
+
+## Deployment instructions
+Check the [setup.azcli](infrastructure/setup.azcli) for more information on how to deploy the application.
 
 ## Expected JSON Request
 
