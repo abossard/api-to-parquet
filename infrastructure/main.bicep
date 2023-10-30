@@ -339,20 +339,6 @@ resource nsgAllowIpWhitelist 'Microsoft.Network/networkSecurityGroups@2023-05-01
           sourceAddressPrefixes: split(ipWhitelist, ',')
         }
       }
-      // {
-      //   name: 'AllowLoadBalancerToSubnet'
-      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
-      //   properties: {
-      //     protocol: 'TCP'
-      //     sourcePortRange: '*'
-      //     destinationPortRange: '443'
-      //     sourceAddressPrefix: 'AzureLoadBalancer'
-      //     destinationAddressPrefix: appEnvSubnetCidr
-      //     access: 'Allow'
-      //     priority: 2713
-      //     direction: 'Inbound'
-      //   }
-      // }
       {
         name: 'AllowTagHTTPSInbound'
         type: 'Microsoft.Network/networkSecurityGroups/securityRules'
@@ -367,76 +353,6 @@ resource nsgAllowIpWhitelist 'Microsoft.Network/networkSecurityGroups@2023-05-01
           direction: 'Inbound'
         }
       }
-      // {
-      //   name: 'AllowInternetHTTPSInbound'
-      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
-      //   properties: {
-      //     protocol: 'TCP'
-      //     sourcePortRange: '*'
-      //     destinationPortRange: '443'
-      //     sourceAddressPrefix: 'Internet'
-      //     destinationAddressPrefix: 'AzureLoadBalancer'
-      //     access: 'Allow'
-      //     priority: 3000
-      //     direction: 'Inbound'
-      //   }
-      // }
-      // {
-      //   name: 'AllowInternetHTTPSInboundSubnet'
-      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
-      //   properties: {
-      //     protocol: 'TCP'
-      //     sourcePortRange: '*'
-      //     destinationPortRange: '443'
-      //     sourceAddressPrefix: 'Internet'
-      //     destinationAddressPrefix: appEnvSubnetCidr
-      //     access: 'Allow'
-      //     priority: 3300
-      //     direction: 'Inbound'
-      //   }
-      // }
-      // {
-      //   name: 'AllowInternetHTTPSInboundVnet'
-      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
-      //   properties: {
-      //     protocol: 'TCP'
-      //     sourcePortRange: '*'
-      //     destinationPortRange: '443'
-      //     sourceAddressPrefix: 'Internet'
-      //     destinationAddressPrefix: 'VirtualNetwork'
-      //     access: 'Allow'
-      //     priority: 3500
-      //     direction: 'Inbound'
-      //   }
-      // }
-      // { //working
-      //   name: 'AllowInternetHTTPSInboundAnything'
-      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
-      //   properties: {
-      //     protocol: 'TCP'
-      //     sourcePortRange: '*'
-      //     destinationPortRange: '443'
-      //     sourceAddressPrefix: 'Internet'
-      //     destinationAddressPrefix: '*'
-      //     access: 'Allow'
-      //     priority: 3700
-      //     direction: 'Inbound'
-      //   }
-      // }
-      // {
-      //   name: 'DenyInternetYes'
-      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
-      //   properties: {
-      //     protocol: 'TCP'
-      //     sourcePortRange: '*'
-      //     destinationPortRange: '*'
-      //     sourceAddressPrefix: 'Internet'
-      //     destinationAddressPrefix: appEnvSubnetCidr
-      //     access: 'Deny'
-      //     priority: 2799
-      //     direction: 'Inbound'
-      //   }
-      // }
     ]
   }
 }
