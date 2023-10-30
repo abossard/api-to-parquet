@@ -249,6 +249,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
           name: 'storageaccountkey'
           value: sa.listKeys().keys[0].value
         }
+        {
+          name: 'redispassword'
+          value: redisCache.listKeys().primaryKey
+        }
       ]
       registries: [
         {
@@ -309,7 +313,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
             }
             {
               name: 'REDIS_PASSWORD'
-              value: redisCache.listKeys().primaryKey
+              secretRef: 'redispassword'
             }
           ]
           resources: {
