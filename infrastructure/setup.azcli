@@ -1,8 +1,8 @@
-SALT=demo2
+SALT=demo4
 L=westeurope
 RG=anbo-parjs-demo-$SALT
 ACR=anboparjscr$SALT
-
+ALLOWED_IPS=$(curl https://ipecho.net/plain)
 
 az group create -n $RG -l $L
 
@@ -10,7 +10,9 @@ az group create -n $RG -l $L
 az deployment group create --resource-group $RG \
     --template-file infrastructure/main.bicep \
     --parameters containerRegistryName=$ACR \
-    --parameters deployApps=false
+    --parameters deployApps=false \
+    --parameters enableIpWhitelist=true \
+    --parameters ipWhitelist=$ALLOWED_IPS
 
 # build and push image
 az acr build -r $ACR -t js2par:latest -f src/Dockerfile src
@@ -18,9 +20,16 @@ az acr build -r $ACR -t js2par:latest -f src/Dockerfile src
 az deployment group show --name main  --resource-group $RG  --query properties.outputs
 # put containerAppFQDN to a variable
 
-az deployment group create --resource-group $RG --template-file infrastructure/main.bicep --parameters containerRegistryName=$ACR
+az deployment group create --resource-group $RG \
+    --template-file infrastructure/main.bicep \
+    --parameters containerRegistryName=$ACR \
+    --parameters deployApps=true \
+    --parameters enableIpWhitelist=true \
+    --parameters ipWhitelist=$ALLOWED_IPS
+
 TEST_URL=https://$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.containerAppFQDN.value -o tsv)
-echo $TEST_URL
+TEST_KEY=$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.apiKey.value -o tsv)
+echo "${TEST_URL}?key=${TEST_KEY}"
 
 # test
 cd tests

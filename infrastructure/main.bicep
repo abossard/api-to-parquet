@@ -1,12 +1,14 @@
+@description('A randrom unique string to salt all names.')
 param salt string = uniqueString(resourceGroup().id)
 
+@description('The name of the project. Used to generate names.')
 param projectName string = 'jsontoparquet'
 
+// some default names
 param containerAppName string = 'ca-${projectName}-${salt}'
 param containerRegistryName string = 'acr${salt}'
-param containerAppEnvName string = 'caenv-${projectName}-${salt}'
+param containerAppEnvName string = 'caenvvnet-${projectName}-${salt}'
 param imageWithTag string = 'js2par:latest'
-param onlyDeployNginxExample bool = false
 param location string = resourceGroup().location
 param useManagedIdentity bool = false
 param redisCacheName string = 'redis-${projectName}-${salt}'
@@ -16,11 +18,50 @@ param blobContainerName string = 'parquet${salt}'
 param apiKeyToUse string = uniqueString(resourceGroup().id, deployment().name)
 param deployApps bool = true
 param synapseWorkspaceName string = 'synapse-${projectName}-${salt}'
+param deploySynapse bool = false
+param vnetName string = 'anboapip-${projectName}-${salt}'
 
 var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
 var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
 
-resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01-preview' = {
+@description('The address space for the vnet')
+param vnetAddressSpace string = '10.144.0.0/20'
+
+param enableIpWhitelist bool = true
+param ipWhitelist string = ''
+
+param containerAppSubnetName string = 'containerapp'
+
+var appEnvSubnetCidr = cidrSubnet(vnetAddressSpace, 23, 0)
+
+// Chapter 001: VNET and Subnets
+resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
+  name: vnetName
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        vnetAddressSpace
+      ]
+    }
+    subnets: [
+      {
+        name: containerAppSubnetName
+        properties: {
+          addressPrefix: appEnvSubnetCidr
+          networkSecurityGroup: (enableIpWhitelist) ? {
+            id: nsgAllowIpWhitelist.id
+          } : null
+        }
+      }
+    ]
+  }
+  resource containerappSubnet 'subnets' existing = {
+    name: containerAppSubnetName
+  }
+}
+
+resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01-preview' = if (deploySynapse) {
   name: synapseWorkspaceName
   location: location
   identity: {
@@ -40,7 +81,7 @@ resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01-preview' = {
   }
 }
 
-resource synapseAllowAll 'Microsoft.Synapse/workspaces/firewallrules@2021-06-01-preview' = {
+resource synapseAllowAll 'Microsoft.Synapse/workspaces/firewallrules@2021-06-01-preview' = if (deploySynapse) {
   parent: synapseWorkspace
   name: 'allowAll'
   properties: {
@@ -152,6 +193,9 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
         sharedKey: logAnalytics.listKeys().primarySharedKey
       }
     }
+    vnetConfiguration: {
+      infrastructureSubnetId: vnet::containerappSubnet.id
+    }
   }
 }
 
@@ -199,14 +243,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
       ]
       ingress: {
         external: true
-        // ipSecurityRestrictions:[
-        //   {
-        //     name: 'allowAll'
-        //     action: 'Allow'
-        //     ipAddressRange: '10.0.0.1/20'
-        //   }
-        // ]
-        targetPort: onlyDeployNginxExample ? 80 : 8080
+        targetPort: 8080
         allowInsecure: false
         traffic: [
           {
@@ -220,7 +257,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
       containers: [
         {
           name: containerAppName
-          image: onlyDeployNginxExample ? 'nginx' : '${acr.properties.loginServer}/${imageWithTag}'
+          image: '${acr.properties.loginServer}/${imageWithTag}'
           env: [
             {
               name: 'OMIT_STARTUP_CHECK'
@@ -280,6 +317,127 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
         ]
       }
     }
+  }
+}
+
+resource nsgAllowIpWhitelist 'Microsoft.Network/networkSecurityGroups@2023-05-01' = {
+  name: 'nsg-whitelsit-${projectName}-${salt}'
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowMyIpAddressHTTPSInboundToAnything'
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          protocol: 'TCP'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 2711
+          direction: 'Inbound'
+          sourceAddressPrefixes: split(ipWhitelist, ',')
+        }
+      }
+      // {
+      //   name: 'AllowLoadBalancerToSubnet'
+      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+      //   properties: {
+      //     protocol: 'TCP'
+      //     sourcePortRange: '*'
+      //     destinationPortRange: '443'
+      //     sourceAddressPrefix: 'AzureLoadBalancer'
+      //     destinationAddressPrefix: appEnvSubnetCidr
+      //     access: 'Allow'
+      //     priority: 2713
+      //     direction: 'Inbound'
+      //   }
+      // }
+      {
+        name: 'AllowTagHTTPSInbound'
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          protocol: 'TCP'
+          sourcePortRange: '*'
+          destinationPortRange: '30000-32676'
+          sourceAddressPrefix: 'AzureLoadBalancer'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 2810
+          direction: 'Inbound'
+        }
+      }
+      // {
+      //   name: 'AllowInternetHTTPSInbound'
+      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+      //   properties: {
+      //     protocol: 'TCP'
+      //     sourcePortRange: '*'
+      //     destinationPortRange: '443'
+      //     sourceAddressPrefix: 'Internet'
+      //     destinationAddressPrefix: 'AzureLoadBalancer'
+      //     access: 'Allow'
+      //     priority: 3000
+      //     direction: 'Inbound'
+      //   }
+      // }
+      // {
+      //   name: 'AllowInternetHTTPSInboundSubnet'
+      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+      //   properties: {
+      //     protocol: 'TCP'
+      //     sourcePortRange: '*'
+      //     destinationPortRange: '443'
+      //     sourceAddressPrefix: 'Internet'
+      //     destinationAddressPrefix: appEnvSubnetCidr
+      //     access: 'Allow'
+      //     priority: 3300
+      //     direction: 'Inbound'
+      //   }
+      // }
+      // {
+      //   name: 'AllowInternetHTTPSInboundVnet'
+      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+      //   properties: {
+      //     protocol: 'TCP'
+      //     sourcePortRange: '*'
+      //     destinationPortRange: '443'
+      //     sourceAddressPrefix: 'Internet'
+      //     destinationAddressPrefix: 'VirtualNetwork'
+      //     access: 'Allow'
+      //     priority: 3500
+      //     direction: 'Inbound'
+      //   }
+      // }
+      // { //working
+      //   name: 'AllowInternetHTTPSInboundAnything'
+      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+      //   properties: {
+      //     protocol: 'TCP'
+      //     sourcePortRange: '*'
+      //     destinationPortRange: '443'
+      //     sourceAddressPrefix: 'Internet'
+      //     destinationAddressPrefix: '*'
+      //     access: 'Allow'
+      //     priority: 3700
+      //     direction: 'Inbound'
+      //   }
+      // }
+      // {
+      //   name: 'DenyInternetYes'
+      //   type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+      //   properties: {
+      //     protocol: 'TCP'
+      //     sourcePortRange: '*'
+      //     destinationPortRange: '*'
+      //     sourceAddressPrefix: 'Internet'
+      //     destinationAddressPrefix: appEnvSubnetCidr
+      //     access: 'Deny'
+      //     priority: 2799
+      //     direction: 'Inbound'
+      //   }
+      // }
+    ]
   }
 }
 

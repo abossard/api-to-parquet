@@ -82,6 +82,7 @@ func KeyRequired(keyToCompareWith string) gin.HandlerFunc {
 }
 
 const lastTimeGeneratedKey = "lastTimestamp"
+const maxTimestampKey = "maxTimestamp"
 
 func main() {
 	log.Println("Starting API")
@@ -193,10 +194,14 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
 		var lastTimeGenerated int64
+		var maxTimestamp int64
+
 		cache.Get(lastTimeGeneratedKey, &lastTimeGenerated)
+		cache.Get(maxTimestampKey, &maxTimestamp)
 
 		c.IndentedJSON(200, gin.H{
 			"lastTimeGenerated": lastTimeGenerated,
+			"maxTimestamp":      maxTimestamp,
 		})
 	})
 	router.POST("/", func(c *gin.Context) {
@@ -231,7 +236,14 @@ func main() {
 		log.Printf("New record statistics: entries=%d, first_timestamp=%v, last_timestamp=%v, file=%s, time_generated=%v",
 			len(newRecord.Content), newRecord.Content[0].Timestamp, newRecord.Content[len(newRecord.Content)-1].Timestamp, newRecord.File, newRecord.TimeGenerated)
 
-		// md5 hash on newRecord.File
+		var maxTimestamp int64
+		for _, v := range newRecord.Content {
+			if v.Timestamp > maxTimestamp {
+				maxTimestamp = v.Timestamp
+			}
+		}
+		log.Printf("Max timestamp: %v", maxTimestamp)
+
 		hasher := md5.New()
 		hasher.Write([]byte(newRecord.File))
 		hashedFileName := hex.EncodeToString(hasher.Sum(nil))
@@ -259,9 +271,19 @@ func main() {
 
 		cache.Set(lastTimeGeneratedKey, newRecord.TimeGenerated, years100)
 
+		var currentMaxTimestamp int64
+		cache.Get(maxTimestampKey, &currentMaxTimestamp)
+		if maxTimestamp > currentMaxTimestamp {
+			log.Printf("Updating maxTimestamp from %v to %v", currentMaxTimestamp, maxTimestamp)
+			cache.Set(maxTimestampKey, maxTimestamp, years100)
+		} else {
+			log.Printf("Not updating maxTimestamp, current value is %v", currentMaxTimestamp)
+		}
+
 		c.IndentedJSON(200, gin.H{
 			"id":            newRecord.Id,
 			"timeGenerated": newRecord.TimeGenerated,
+			"maxTimestamp":  maxTimestamp,
 		})
 	})
 	router.Run(":8080")

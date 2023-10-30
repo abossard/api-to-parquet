@@ -43,7 +43,7 @@ content-type: application/json
 
 GET http://localhost:8080/?key=123 HTTP/1.1
 ###
-POST https://cs-jsontoparquet-3b3rkdfzwqij4.wonderfulsea-1fb27218.westeurope.azurecontainerapps.io/ HTTP/1.1
+POST https://ca-jsontoparquet-rsgxnp2yzxobq.nicesea-49e4b167.westeurope.azurecontainerapps.io/?key=j3mhfhc4z4wng HTTP/1.1
 content-type: application/json
 
 {
@@ -57,7 +57,7 @@ content-type: application/json
         "timestamp": {{$timestamp}},
         "value": {{$randomInt 1 43}}
     }],
-    "fileXXXXX": "2023/10/11/{{$timestamp}}-{{$guid}}",
+    "file": "2023/10/11/{{$timestamp}}-{{$guid}}.parquet",
     "timeGenerated": {{$timestamp}},
     "id": "{{$guid}}"
 }

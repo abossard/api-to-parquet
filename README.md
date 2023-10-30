@@ -7,6 +7,14 @@ This is a Go application that processes time series data and saves it to a Parqu
 [ ] Data verfication method?
 
 ## Expected JSON Request
+
+```
+GET http://localhost:8080/ HTTP/1.1
+```
+Will return the `lastTimeGenerated` property as well as the maxTimestamp, which is the highest timestamp
+that has even been sent to the API.
+
+
 ```
 POST http://localhost:8080/ HTTP/1.1
 content-type: application/json
