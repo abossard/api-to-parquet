@@ -14,7 +14,7 @@ param location string = resourceGroup().location
 param useManagedIdentity bool = false
 
 @description('Should it deploy Synapse?')
-param deploySynapse bool = false
+param deploySynapse bool = true
 
 @description('Should it deploy the container app?')
 param deployApps bool = true
@@ -31,7 +31,6 @@ param ipWhitelist string = ''
 @description('The address space for the vnet')
 param vnetAddressSpace string = '10.144.0.0/20'
 
-
 // some default names
 param containerAppName string = 'ca-${projectName}-${salt}'
 param containerRegistryName string = 'acr${salt}'
@@ -42,6 +41,7 @@ param storageAccountName string = 'castrg${salt}'
 param blobContainerName string = 'parquet${salt}'
 param synapseWorkspaceName string = 'synapse-${projectName}-${salt}'
 param vnetName string = 'anboapip-${projectName}-${salt}'
+param adxPoolName string = 'adxpool${salt}'
 
 var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
 var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
@@ -77,7 +77,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   }
 }
 
-resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01-preview' = if (deploySynapse) {
+resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01' = if (deploySynapse) {
   name: synapseWorkspaceName
   location: location
   identity: {
@@ -88,21 +88,42 @@ resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01-preview' = if
   }
   properties: {
     defaultDataLakeStorage: {
-      accountUrl: 'https://${storageAccountName}.dfs.${environment().suffixes.azureDatalakeStoreFileSystem}'
+      accountUrl: 'https://${storageAccountName}.dfs.${environment().suffixes.storage}'
       filesystem: blobContainerName
       resourceId: sa.id
       createManagedPrivateEndpoint: false
     }
     azureADOnlyAuthentication: true
   }
+
+  resource synapseAllowAll 'firewallRules' = if (deploySynapse) {
+    name: 'allowAll'
+    properties: {
+      startIpAddress: '0.0.0.0'
+      endIpAddress: '255.255.255.255'
+    }
+  }
 }
 
-resource synapseAllowAll 'Microsoft.Synapse/workspaces/firewallrules@2021-06-01-preview' = if (deploySynapse) {
+resource synapseAdx 'Microsoft.Synapse/workspaces/kustoPools@2021-06-01-preview' = {
   parent: synapseWorkspace
-  name: 'allowAll'
+  name: adxPoolName
+  location: location
+  sku: {
+    capacity: 2
+    name: 'Compute optimized'
+    size: 'Extra small'
+  }
   properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '255.255.255.255'
+    enableStreamingIngest: true
+    enablePurge: true
+    workspaceUID: synapseWorkspace.properties.workspaceUID
+    optimizedAutoscale: {
+      version: 1
+      isEnabled: true
+      minimum: 2
+      maximum: 3
+    }
   }
 }
 
@@ -318,7 +339,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
   }
 }
 
-resource nsgAllowIpWhitelist 'Microsoft.Network/networkSecurityGroups@2023-05-01' = {
+resource nsgAllowIpWhitelist 'Microsoft.Network/networkSecurityGroups@2023-05-01' = if (enableIpWhitelist) {
   name: 'nsg-whitelsit-${projectName}-${salt}'
   location: location
   properties: {

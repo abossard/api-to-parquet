@@ -28,8 +28,8 @@ az deployment group create --resource-group $RG \
     --template-file infrastructure/main.bicep \
     --parameters containerRegistryName=$ACR \
     --parameters deployApps=true \
-    --parameters enableIpWhitelist=true \
-    --parameters ipWhitelist=$ALLOWED_IPS
+    --parameters enableIpWhitelist=false \
+    --parameters ipWhitelist=''
 
 # 5: get the url
 URL=https://$(az deployment group show --name main  --resource-group $RG  --query properties.outputs.containerAppFQDN.value -o tsv)
