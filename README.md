@@ -11,6 +11,8 @@ This is a Go application that processes time series data and saves it to a Parqu
 
 [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fabossard%2Fapi-to-parquet%2Fmain%2Finfrastructure%2Fazuredeploy.json)
 
+After the deployment finished, you'll see the public URL with the API Key in the deployment output. Also the static IP of the container app environmnet.
+
 For more detailed instructions and other scenarios check: [setup.azcli](infrastructure/setup.azcli) 
 
 ## Expected JSON Request
