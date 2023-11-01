@@ -12,3 +12,7 @@ module main 'main.bicep' = {
     enableIpWhitelist: ipWhitelist != ''
   }
 }
+
+output endpoint string = main.outputs.containerAppFQDN
+output staticIp string = main.outputs.containerAppStaticIP
+output apiKey string = main.outputs.apiKey

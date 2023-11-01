@@ -7,9 +7,9 @@ This is a Go application that processes time series data and saves it to a Parqu
 [x] Data verfication method
 
 ## Deployment instructions
-[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fabossard%2Fapi-to-parquet%2Fmain%2Finfrastructure%azuredeploy.json)
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fabossard%2Fapi-to-parquet%2Fmain%2Finfrastructure%2Fazuredeploy.json)
 
-[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fabossard%2Fapi-to-parquet%2Fmain%2Finfrastructure%azuredeploy.json)
+[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fabossard%2Fapi-to-parquet%2Fmain%2Finfrastructure%2Fmain.json)
 
 For more detailed instructions and other scenarios check: [setup.azcli](infrastructure/setup.azcli) 
 
