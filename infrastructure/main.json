@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.22.6.54827",
-      "templateHash": "5086525581455644332"
+      "templateHash": "4623581056552681581"
     }
   },
   "parameters": {
@@ -127,7 +127,7 @@
     },
     "vnetName": {
       "type": "string",
-      "defaultValue": "[format('anboapip-{0}-{1}', parameters('projectName'), parameters('salt'))]"
+      "defaultValue": "[format('vnet{0}{1}', parameters('projectName'), parameters('salt'))]"
     },
     "adxPoolName": {
       "type": "string",
