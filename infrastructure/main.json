@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.22.6.54827",
-      "templateHash": "9591777716534173378"
+      "templateHash": "6092273854182973946"
     }
   },
   "parameters": {
@@ -125,10 +125,6 @@
       "type": "string",
       "defaultValue": "[format('synapse-{0}-{1}', parameters('projectName'), parameters('salt'))]"
     },
-    "acaVnetName": {
-      "type": "string",
-      "defaultValue": "[format('vnet{0}{1}', parameters('projectName'), parameters('salt'))]"
-    },
     "adxPoolName": {
       "type": "string",
       "defaultValue": "[format('adxpool{0}', parameters('salt'))]"
@@ -151,6 +147,7 @@
     }
   },
   "variables": {
+    "acaVnetName": "[format('vnet{0}{1}', parameters('projectName'), parameters('salt'))]",
     "acrPullRole": "[resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
     "storageRole": "[resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
     "appEnvSubnetCidr": "[cidrSubnet(parameters('vnetAddressSpace'), 23, 0)]",
@@ -186,7 +183,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2023-05-01",
-      "name": "[parameters('acaVnetName')]",
+      "name": "[variables('acaVnetName')]",
       "location": "[parameters('location')]",
       "properties": {
         "addressSpace": {
@@ -380,12 +377,12 @@
           }
         },
         "vnetConfiguration": {
-          "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('acaVnetName'), parameters('containerAppSubnetName'))]"
+          "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('acaVnetName'), parameters('containerAppSubnetName'))]"
         }
       },
       "dependsOn": [
         "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('containerAppLogAnalyticsName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('acaVnetName'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('acaVnetName'))]"
       ]
     },
     {
