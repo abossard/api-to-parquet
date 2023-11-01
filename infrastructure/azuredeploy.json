@@ -1,0 +1,967 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.22.6.54827",
+      "templateHash": "15184150317469521758"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "The location to deploy to."
+      }
+    },
+    "ipWhitelist": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "List of IP addresses to whitelist. Separate with commas. Leave empty for public access."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "main",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "ipWhitelist": {
+            "value": "[parameters('ipWhitelist')]"
+          },
+          "enableIpWhitelist": {
+            "value": "[not(equals(parameters('ipWhitelist'), ''))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.22.6.54827",
+              "templateHash": "9591777716534173378"
+            }
+          },
+          "parameters": {
+            "salt": {
+              "type": "string",
+              "defaultValue": "[substring(uniqueString(resourceGroup().id), 0, 5)]",
+              "metadata": {
+                "description": "A randrom unique string to salt all names."
+              }
+            },
+            "projectName": {
+              "type": "string",
+              "defaultValue": "jsontoparquet",
+              "metadata": {
+                "description": "The name of the project. Used to generate names."
+              }
+            },
+            "imageWithTag": {
+              "type": "string",
+              "defaultValue": "js2par:latest",
+              "metadata": {
+                "description": "The image to use for the container app."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "The location to deploy to."
+              }
+            },
+            "useManagedIdentity": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "The environment to deploy to."
+              }
+            },
+            "deploySynapse": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Should it deploy Synapse?"
+              }
+            },
+            "deployApps": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Should it deploy the container app?"
+              }
+            },
+            "apiKeyToUse": {
+              "type": "string",
+              "defaultValue": "[uniqueString(resourceGroup().id, deployment().name)]",
+              "metadata": {
+                "description": "The API key to use for the container app. Or empty for none."
+              }
+            },
+            "enableIpWhitelist": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Should it enable IP whitelisting?"
+              }
+            },
+            "ipWhitelist": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The IP whitelist. Comma separated list of IPs."
+              }
+            },
+            "vnetAddressSpace": {
+              "type": "string",
+              "defaultValue": "10.144.0.0/20",
+              "metadata": {
+                "description": "The address space for the vnet"
+              }
+            },
+            "doBuildContainerAppImage": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Build container app image?"
+              }
+            },
+            "containerAppName": {
+              "type": "string",
+              "defaultValue": "[format('ca-{0}-{1}', parameters('projectName'), parameters('salt'))]"
+            },
+            "containerRegistryName": {
+              "type": "string",
+              "defaultValue": "[format('acr{0}', parameters('salt'))]"
+            },
+            "containerAppEnvName": {
+              "type": "string",
+              "defaultValue": "[format('caenvvnet-{0}-{1}', parameters('projectName'), parameters('salt'))]"
+            },
+            "redisCacheName": {
+              "type": "string",
+              "defaultValue": "[format('redis-{0}-{1}', parameters('projectName'), parameters('salt'))]"
+            },
+            "containerAppLogAnalyticsName": {
+              "type": "string",
+              "defaultValue": "[format('calog-{0}-{1}', parameters('projectName'), parameters('salt'))]"
+            },
+            "storageAccountName": {
+              "type": "string",
+              "defaultValue": "[format('castrg{0}', parameters('salt'))]"
+            },
+            "blobContainerName": {
+              "type": "string",
+              "defaultValue": "[format('parquet{0}', parameters('salt'))]"
+            },
+            "synapseWorkspaceName": {
+              "type": "string",
+              "defaultValue": "[format('synapse-{0}-{1}', parameters('projectName'), parameters('salt'))]"
+            },
+            "acaVnetName": {
+              "type": "string",
+              "defaultValue": "[format('vnet{0}{1}', parameters('projectName'), parameters('salt'))]"
+            },
+            "adxPoolName": {
+              "type": "string",
+              "defaultValue": "[format('adxpool{0}', parameters('salt'))]"
+            },
+            "adxDatabaseName": {
+              "type": "string",
+              "defaultValue": "[format('adxdb{0}', parameters('salt'))]"
+            },
+            "githubApiRepositoryUrl": {
+              "type": "string",
+              "defaultValue": "https://github.com/abossard/api-to-parquet.git"
+            },
+            "githubApiRepositoryBranch": {
+              "type": "string",
+              "defaultValue": "main"
+            },
+            "containerAppSubnetName": {
+              "type": "string",
+              "defaultValue": "containerapp"
+            }
+          },
+          "variables": {
+            "acrPullRole": "[resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+            "storageRole": "[resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
+            "appEnvSubnetCidr": "[cidrSubnet(parameters('vnetAddressSpace'), 23, 0)]",
+            "keyAppendix": "[if(greater(length(parameters('apiKeyToUse')), 0), format('?key={0}', parameters('apiKeyToUse')), '')]"
+          },
+          "resources": [
+            {
+              "condition": "[and(parameters('deploySynapse'), parameters('deploySynapse'))]",
+              "type": "Microsoft.Synapse/workspaces/firewallRules",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', parameters('synapseWorkspaceName'), 'allowAll')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "255.255.255.255"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Synapse/workspaces/kustoPools/databases",
+              "apiVersion": "2021-06-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('synapseWorkspaceName'), parameters('adxPoolName'), parameters('adxDatabaseName'))]",
+              "kind": "ReadWrite",
+              "location": "[parameters('location')]",
+              "properties": {
+                "hotCachePeriod": "P31D"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces/kustoPools', parameters('synapseWorkspaceName'), parameters('adxPoolName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('acaVnetName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('vnetAddressSpace')]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[parameters('containerAppSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[variables('appEnvSubnetCidr')]",
+                      "networkSecurityGroup": "[if(parameters('enableIpWhitelist'), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups', format('nsg-whitelsit-{0}-{1}', parameters('projectName'), parameters('salt')))), null())]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', format('nsg-whitelsit-{0}-{1}', parameters('projectName'), parameters('salt')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('deploySynapse')]",
+              "type": "Microsoft.Synapse/workspaces",
+              "apiVersion": "2021-06-01",
+              "name": "[parameters('synapseWorkspaceName')]",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "SystemAssigned,UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))))]": {}
+                }
+              },
+              "properties": {
+                "defaultDataLakeStorage": {
+                  "accountUrl": "[format('https://{0}.dfs.{1}', parameters('storageAccountName'), environment().suffixes.storage)]",
+                  "filesystem": "[parameters('blobContainerName')]",
+                  "resourceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                  "createManagedPrivateEndpoint": false
+                },
+                "azureADOnlyAuthentication": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Synapse/workspaces/kustoPools",
+              "apiVersion": "2021-06-01-preview",
+              "name": "[format('{0}/{1}', parameters('synapseWorkspaceName'), parameters('adxPoolName'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "capacity": 2,
+                "name": "Compute optimized",
+                "size": "Extra small"
+              },
+              "properties": {
+                "enableStreamingIngest": true,
+                "enablePurge": true,
+                "workspaceUID": "[reference(resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName')), '2021-06-01').workspaceUID]",
+                "optimizedAutoscale": {
+                  "version": 1,
+                  "isEnabled": true,
+                  "minimum": 2,
+                  "maximum": 3
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ContainerRegistry/registries",
+              "apiVersion": "2023-07-01",
+              "name": "[parameters('containerRegistryName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "adminUserEnabled": true
+              }
+            },
+            {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2023-01-31",
+              "name": "[format('id-{0}', parameters('containerAppName'))]",
+              "location": "[parameters('location')]"
+            },
+            {
+              "type": "Microsoft.Cache/redis",
+              "apiVersion": "2020-06-01",
+              "name": "[parameters('redisCacheName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "enableNonSslPort": false,
+                "minimumTlsVersion": "1.2",
+                "sku": {
+                  "capacity": 1,
+                  "family": "C",
+                  "name": "Basic"
+                }
+              }
+            },
+            {
+              "condition": "[parameters('useManagedIdentity')]",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', parameters('containerRegistryName'))]",
+              "name": "[guid(resourceGroup().id, resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), variables('acrPullRole'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('acrPullRole')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), '2023-01-31').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('useManagedIdentity')]",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
+              "name": "[guid(resourceGroup().id, resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), variables('storageRole'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('storageRole')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), '2023-01-31').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2023-01-01",
+              "name": "[parameters('storageAccountName')]",
+              "location": "[parameters('location')]",
+              "kind": "StorageV2",
+              "sku": {
+                "name": "Standard_LRS"
+              },
+              "properties": {
+                "isHnsEnabled": true,
+                "accessTier": "Hot"
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2023-01-01",
+              "name": "[format('{0}/{1}', parameters('storageAccountName'), 'default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2023-01-01",
+              "name": "[format('{0}/{1}/{2}', parameters('storageAccountName'), 'default', parameters('blobContainerName'))]",
+              "properties": {},
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default')]"
+              ]
+            },
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2022-10-01",
+              "name": "[parameters('containerAppLogAnalyticsName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "PerGB2018"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.App/managedEnvironments",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('containerAppEnvName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "appLogsConfiguration": {
+                  "destination": "log-analytics",
+                  "logAnalyticsConfiguration": {
+                    "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('containerAppLogAnalyticsName')), '2022-10-01').customerId]",
+                    "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', parameters('containerAppLogAnalyticsName')), '2022-10-01').primarySharedKey]"
+                  }
+                },
+                "vnetConfiguration": {
+                  "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('acaVnetName'), parameters('containerAppSubnetName'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('containerAppLogAnalyticsName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('acaVnetName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('deployApps')]",
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('containerAppName')]",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))))]": {}
+                }
+              },
+              "properties": {
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
+                "configuration": {
+                  "secrets": [
+                    {
+                      "name": "myregistrypassword",
+                      "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), '2023-07-01').passwords[0].value]"
+                    },
+                    {
+                      "name": "storageaccountkey",
+                      "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').keys[0].value]"
+                    },
+                    {
+                      "name": "redispassword",
+                      "value": "[listKeys(resourceId('Microsoft.Cache/redis', parameters('redisCacheName')), '2020-06-01').primaryKey]"
+                    }
+                  ],
+                  "registries": [
+                    {
+                      "server": "[reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), '2023-07-01').loginServer]",
+                      "username": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), '2023-07-01').username]",
+                      "passwordSecretRef": "myregistrypassword"
+                    }
+                  ],
+                  "ingress": {
+                    "external": true,
+                    "targetPort": 8080,
+                    "allowInsecure": false,
+                    "traffic": [
+                      {
+                        "latestRevision": true,
+                        "weight": 100
+                      }
+                    ]
+                  }
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "[parameters('containerAppName')]",
+                      "image": "[format('{0}/{1}', reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), '2023-07-01').loginServer, reference(resourceId('Microsoft.Resources/deployments', 'build_image'), '2022-09-01').outputs.imageWithTag.value)]",
+                      "env": [
+                        {
+                          "name": "OMIT_STARTUP_CHECK",
+                          "value": "true"
+                        },
+                        {
+                          "name": "STORAGE_ACCOUNT_KEY",
+                          "secretRef": "storageaccountkey"
+                        },
+                        {
+                          "name": "AZURE_CLIENT_ID",
+                          "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), '2023-01-31').clientId]"
+                        },
+                        {
+                          "name": "STORAGE_ACCOUNT_NAME",
+                          "value": "[parameters('storageAccountName')]"
+                        },
+                        {
+                          "name": "STORAGE_CONTAINER_NAME",
+                          "value": "[parameters('blobContainerName')]"
+                        },
+                        {
+                          "name": "REDIS_HOST",
+                          "value": "[reference(resourceId('Microsoft.Cache/redis', parameters('redisCacheName')), '2020-06-01').hostName]"
+                        },
+                        {
+                          "name": "REDIS_PORT",
+                          "value": "6380"
+                        },
+                        {
+                          "name": "REQUIRE_API_KEY",
+                          "value": "[parameters('apiKeyToUse')]"
+                        },
+                        {
+                          "name": "REDIS_PASSWORD",
+                          "secretRef": "redispassword"
+                        }
+                      ],
+                      "resources": {
+                        "cpu": "[json('1')]",
+                        "memory": "2Gi"
+                      }
+                    }
+                  ],
+                  "scale": {
+                    "minReplicas": 1,
+                    "maxReplicas": 10,
+                    "rules": [
+                      {
+                        "name": "http-requests",
+                        "http": {
+                          "metadata": {
+                            "concurrentRequests": "10"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('storageAccountName'), 'default', parameters('blobContainerName'))]",
+                "[resourceId('Microsoft.Resources/deployments', 'build_image')]",
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
+                "[resourceId('Microsoft.Cache/redis', parameters('redisCacheName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('enableIpWhitelist')]",
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('nsg-whitelsit-{0}-{1}', parameters('projectName'), parameters('salt'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowMyIpAddressHTTPSInboundToAnything",
+                    "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                    "properties": {
+                      "protocol": "TCP",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 2711,
+                      "direction": "Inbound",
+                      "sourceAddressPrefixes": "[split(parameters('ipWhitelist'), ',')]"
+                    }
+                  },
+                  {
+                    "name": "AllowTagHTTPSInbound",
+                    "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                    "properties": {
+                      "protocol": "TCP",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "30000-32676",
+                      "sourceAddressPrefix": "AzureLoadBalancer",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 2810,
+                      "direction": "Inbound"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2022-09-01",
+              "name": "build_image",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "acrName": {
+                    "value": "[parameters('containerRegistryName')]"
+                  },
+                  "doBuildContainerAppImage": {
+                    "value": "[parameters('doBuildContainerAppImage')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "imageWithTag": {
+                    "value": "[parameters('imageWithTag')]"
+                  },
+                  "githubApiRepositoryUrl": {
+                    "value": "[parameters('githubApiRepositoryUrl')]"
+                  },
+                  "githubApiRepositoryBranch": {
+                    "value": "[parameters('githubApiRepositoryBranch')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.22.6.54827",
+                      "templateHash": "3676636159162262997"
+                    }
+                  },
+                  "parameters": {
+                    "acrName": {
+                      "type": "string"
+                    },
+                    "doBuildContainerAppImage": {
+                      "type": "bool"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "imageWithTag": {
+                      "type": "string"
+                    },
+                    "githubApiRepositoryUrl": {
+                      "type": "string"
+                    },
+                    "githubApiRepositoryBranch": {
+                      "type": "string"
+                    }
+                  },
+                  "resources": [
+                    {
+                      "condition": "[parameters('doBuildContainerAppImage')]",
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2022-09-01",
+                      "name": "build-container-app-image",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "AcrName": {
+                            "value": "[parameters('acrName')]"
+                          },
+                          "location": {
+                            "value": "[parameters('location')]"
+                          },
+                          "gitRepositoryUrl": {
+                            "value": "[parameters('githubApiRepositoryUrl')]"
+                          },
+                          "buildWorkingDirectory": {
+                            "value": "src"
+                          },
+                          "imageName": {
+                            "value": "[split(parameters('imageWithTag'), ':')[0]]"
+                          },
+                          "imageTag": {
+                            "value": "[split(parameters('imageWithTag'), ':')[1]]"
+                          },
+                          "gitBranch": {
+                            "value": "[parameters('githubApiRepositoryBranch')]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.19.5.34762",
+                              "templateHash": "12558611171422575177"
+                            },
+                            "name": "ACR Image Build",
+                            "description": "Builds a container image inside ACR from source code",
+                            "owner": "gordonby"
+                          },
+                          "parameters": {
+                            "AcrName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The name of the Azure Container Registry"
+                              }
+                            },
+                            "location": {
+                              "type": "string",
+                              "defaultValue": "[resourceGroup().location]",
+                              "metadata": {
+                                "description": "The location of the ACR and where to deploy the module resources to"
+                              }
+                            },
+                            "forceUpdateTag": {
+                              "type": "string",
+                              "defaultValue": "[utcNow()]",
+                              "metadata": {
+                                "description": "How the deployment script should be forced to execute"
+                              }
+                            },
+                            "rbacRoleNeeded": {
+                              "type": "string",
+                              "defaultValue": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+                              "metadata": {
+                                "description": "Azure RoleId that are required for the DeploymentScript resource to import images"
+                              }
+                            },
+                            "useExistingManagedIdentity": {
+                              "type": "bool",
+                              "defaultValue": false,
+                              "metadata": {
+                                "description": "Does the Managed Identity already exists, or should be created"
+                              }
+                            },
+                            "managedIdentityName": {
+                              "type": "string",
+                              "defaultValue": "id-ContainerRegistryBuild",
+                              "metadata": {
+                                "description": "Name of the Managed Identity resource"
+                              }
+                            },
+                            "existingManagedIdentitySubId": {
+                              "type": "string",
+                              "defaultValue": "[subscription().subscriptionId]",
+                              "metadata": {
+                                "description": "For an existing Managed Identity, the Subscription Id it is located in"
+                              }
+                            },
+                            "existingManagedIdentityResourceGroupName": {
+                              "type": "string",
+                              "defaultValue": "[resourceGroup().name]",
+                              "metadata": {
+                                "description": "For an existing Managed Identity, the Resource Group it is located in"
+                              }
+                            },
+                            "initialScriptDelay": {
+                              "type": "string",
+                              "defaultValue": "30s",
+                              "metadata": {
+                                "description": "A delay before the script import operation starts. Primarily to allow Azure AAD Role Assignments to propagate"
+                              }
+                            },
+                            "cleanupPreference": {
+                              "type": "string",
+                              "defaultValue": "OnSuccess",
+                              "metadata": {
+                                "description": "When the script resource is cleaned up"
+                              },
+                              "allowedValues": [
+                                "OnSuccess",
+                                "OnExpiration",
+                                "Always"
+                              ]
+                            },
+                            "gitRepositoryUrl": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The Git Repository URL, eg. https://github.com/YOURORG/YOURREPO.git"
+                              }
+                            },
+                            "gitBranch": {
+                              "type": "string",
+                              "defaultValue": "main",
+                              "metadata": {
+                                "description": "The name of the repository branch to use"
+                              }
+                            },
+                            "buildWorkingDirectory": {
+                              "type": "string",
+                              "defaultValue": ".",
+                              "metadata": {
+                                "description": "The docker context working directory, change this when your Dockerfile and source files are ALL located in a repo subdirectory"
+                              }
+                            },
+                            "dockerfileDirectory": {
+                              "type": "string",
+                              "defaultValue": "",
+                              "metadata": {
+                                "description": "The subdirectory relative to the working directory that contains the Dockerfile"
+                              }
+                            },
+                            "dockerfileName": {
+                              "type": "string",
+                              "defaultValue": "Dockerfile",
+                              "metadata": {
+                                "description": "The name of the dockerfile"
+                              }
+                            },
+                            "imageName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The image name/path you want to create in ACR"
+                              }
+                            },
+                            "imageTag": {
+                              "type": "string",
+                              "defaultValue": "[string(dateTimeToEpoch(utcNow()))]",
+                              "metadata": {
+                                "description": "The image tag you want to create"
+                              }
+                            },
+                            "acrBuildPlatform": {
+                              "type": "string",
+                              "defaultValue": "linux",
+                              "metadata": {
+                                "description": "The ACR compute platform needed to build the image"
+                              }
+                            }
+                          },
+                          "variables": {
+                            "$fxv#0": "#!/bin/bash\nset -e\n\necho \"Waiting on RBAC replication ($initialDelay)\"\nsleep $initialDelay\n\naz acr build --resource-group $acrResourceGroup \\\n  --registry $acrName \\\n  --image $taggedImageName $repo \\\n  --file $dockerfilePath \\\n  --platform $platform",
+                            "repo": "[format('{0}#{1}:{2}', parameters('gitRepositoryUrl'), parameters('gitBranch'), parameters('buildWorkingDirectory'))]",
+                            "cleanRepoName": "[last(split(parameters('gitRepositoryUrl'), '/'))]",
+                            "cleanImageName": "[replace(parameters('imageName'), '/', '')]",
+                            "taggedImageName": "[format('{0}:{1}', parameters('imageName'), parameters('imageTag'))]",
+                            "dockerfilePath": "[if(not(empty(parameters('dockerfileDirectory'))), format('{0}/{1}', parameters('dockerfileDirectory'), parameters('dockerfileName')), parameters('dockerfileName'))]"
+                          },
+                          "resources": [
+                            {
+                              "condition": "[not(parameters('useExistingManagedIdentity'))]",
+                              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+                              "apiVersion": "2018-11-30",
+                              "name": "[parameters('managedIdentityName')]",
+                              "location": "[parameters('location')]"
+                            },
+                            {
+                              "condition": "[not(empty(parameters('rbacRoleNeeded')))]",
+                              "type": "Microsoft.Authorization/roleAssignments",
+                              "apiVersion": "2022-04-01",
+                              "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', parameters('AcrName'))]",
+                              "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', parameters('AcrName')), parameters('rbacRoleNeeded'), if(parameters('useExistingManagedIdentity'), extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('existingManagedIdentitySubId'), parameters('existingManagedIdentityResourceGroupName')), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName'))))]",
+                              "properties": {
+                                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('rbacRoleNeeded'))]",
+                                "principalId": "[if(parameters('useExistingManagedIdentity'), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('existingManagedIdentitySubId'), parameters('existingManagedIdentityResourceGroupName')), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), '2018-11-30').principalId, reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), '2018-11-30').principalId)]",
+                                "principalType": "ServicePrincipal"
+                              },
+                              "dependsOn": [
+                                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName'))]"
+                              ]
+                            },
+                            {
+                              "type": "Microsoft.Resources/deploymentScripts",
+                              "apiVersion": "2020-10-01",
+                              "name": "[format('ACR-Build-{0}-{1}', variables('cleanImageName'), variables('cleanRepoName'))]",
+                              "location": "[parameters('location')]",
+                              "identity": {
+                                "type": "UserAssigned",
+                                "userAssignedIdentities": {
+                                  "[format('{0}', if(parameters('useExistingManagedIdentity'), extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('existingManagedIdentitySubId'), parameters('existingManagedIdentityResourceGroupName')), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName'))))]": {}
+                                }
+                              },
+                              "kind": "AzureCLI",
+                              "properties": {
+                                "forceUpdateTag": "[parameters('forceUpdateTag')]",
+                                "azCliVersion": "2.30.0",
+                                "timeout": "PT45M",
+                                "retentionInterval": "P1D",
+                                "environmentVariables": [
+                                  {
+                                    "name": "acrName",
+                                    "value": "[parameters('AcrName')]"
+                                  },
+                                  {
+                                    "name": "acrResourceGroup",
+                                    "value": "[resourceGroup().name]"
+                                  },
+                                  {
+                                    "name": "taggedImageName",
+                                    "value": "[variables('taggedImageName')]"
+                                  },
+                                  {
+                                    "name": "repo",
+                                    "value": "[variables('repo')]"
+                                  },
+                                  {
+                                    "name": "dockerfilePath",
+                                    "value": "[variables('dockerfilePath')]"
+                                  },
+                                  {
+                                    "name": "platform",
+                                    "value": "[parameters('acrBuildPlatform')]"
+                                  },
+                                  {
+                                    "name": "initialDelay",
+                                    "value": "[parameters('initialScriptDelay')]"
+                                  }
+                                ],
+                                "scriptContent": "[variables('$fxv#0')]",
+                                "cleanupPreference": "[parameters('cleanupPreference')]"
+                              },
+                              "dependsOn": [
+                                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName'))]",
+                                "[extensionResourceId(resourceId('Microsoft.ContainerRegistry/registries', parameters('AcrName')), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.ContainerRegistry/registries', parameters('AcrName')), parameters('rbacRoleNeeded'), if(parameters('useExistingManagedIdentity'), extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('existingManagedIdentitySubId'), parameters('existingManagedIdentityResourceGroupName')), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')))))]"
+                              ]
+                            }
+                          ],
+                          "outputs": {
+                            "acrImage": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "The ACR uri the image can be accessed on if building was successful"
+                              },
+                              "value": "[format('{0}/{1}', reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('AcrName')), '2021-12-01-preview').loginServer, variables('taggedImageName'))]"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "outputs": {
+                    "imageWithTag": {
+                      "type": "string",
+                      "value": "[parameters('imageWithTag')]"
+                    }
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "containerAppFQDN": {
+              "type": "string",
+              "value": "[if(parameters('deployApps'), format('{0}{1}', reference(resourceId('Microsoft.App/containerApps', parameters('containerAppName')), '2023-05-01').configuration.ingress.fqdn, variables('keyAppendix')), 'https://<containerAppFQDN>')]"
+            },
+            "containerAppStaticIP": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName')), '2023-05-01').staticIp]"
+            },
+            "apiKey": {
+              "type": "string",
+              "value": "[parameters('apiKeyToUse')]"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
