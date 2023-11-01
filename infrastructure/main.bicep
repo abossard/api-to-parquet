@@ -1,5 +1,5 @@
 @description('A randrom unique string to salt all names.')
-param salt string = uniqueString(resourceGroup().id)
+param salt string = substring(uniqueString(resourceGroup().id), 0, 5)
 
 @description('The name of the project. Used to generate names.')
 param projectName string = 'jsontoparquet'
@@ -31,6 +31,9 @@ param ipWhitelist string = ''
 @description('The address space for the vnet')
 param vnetAddressSpace string = '10.144.0.0/20'
 
+@description('Build container app image?')
+param doBuildContainerAppImage bool = true
+
 // some default names
 param containerAppName string = 'ca-${projectName}-${salt}'
 param containerRegistryName string = 'acr${salt}'
@@ -42,6 +45,9 @@ param blobContainerName string = 'parquet${salt}'
 param synapseWorkspaceName string = 'synapse-${projectName}-${salt}'
 param vnetName string = 'anboapip-${projectName}-${salt}'
 param adxPoolName string = 'adxpool${salt}'
+param adxDatabaseName string = 'adxdb${salt}'
+param githubApiRepositoryUrl string = 'https://github.com/abossard/api-to-parquet.git'
+param githubApiRepositoryBranch string = 'main'
 
 var acrPullRole = resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
 var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
@@ -49,6 +55,18 @@ var storageRole = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b
 param containerAppSubnetName string = 'containerapp'
 
 var appEnvSubnetCidr = cidrSubnet(vnetAddressSpace, 23, 0)
+
+module buildContainerImage 'build_image.bicep' = {
+  name: 'build_image'
+  params: {
+    acrName: acr.name
+    doBuildContainerAppImage: doBuildContainerAppImage
+    location: location
+    imageWithTag: imageWithTag
+    githubApiRepositoryUrl: githubApiRepositoryUrl
+    githubApiRepositoryBranch: githubApiRepositoryBranch
+  }
+}
 
 // Chapter 001: VNET and Subnets
 resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -123,6 +141,14 @@ resource synapseAdx 'Microsoft.Synapse/workspaces/kustoPools@2021-06-01-preview'
       isEnabled: true
       minimum: 2
       maximum: 3
+    }
+  }
+  resource database 'databases' = {
+    kind: 'ReadWrite'
+    location: location
+    name: adxDatabaseName
+    properties: {
+      hotCachePeriod: 'P31D'
     }
   }
 }
@@ -276,7 +302,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
       containers: [
         {
           name: containerAppName
-          image: '${acr.properties.loginServer}/${imageWithTag}'
+          image: '${acr.properties.loginServer}/${buildContainerImage.outputs.imageWithTag}'
           env: [
             {
               name: 'OMIT_STARTUP_CHECK'

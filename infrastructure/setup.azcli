@@ -1,3 +1,16 @@
+### NEW expedited deployment:
+L=westeurope
+RG=anbo-parjs-demo-build
+ENABLE_IP_WHITELIST=true
+ALLOWED_IPS=$(curl https://ipecho.net/plain)
+
+az group create -n $RG -l $L
+
+az deployment group create --resource-group $RG \
+    --template-file infrastructure/main.bicep \
+    --parameters enableIpWhitelist=$ENABLE_IP_WHITELIST \
+    --parameters ipWhitelist=$ALLOWED_IPS
+
 # to deploy do the following steps:
 # NEW Deployment: 0, 1, 2, 3, 4, 5
 # UPDATE Deployment: 0, 3, 4, 5
@@ -8,6 +21,7 @@ L=westeurope
 RG=anbo-parjs-demo-$SALT
 ACR=anboparjscr$SALT
 ALLOWED_IPS=$(curl https://ipecho.net/plain)
+ENABLE_IP_WHITELIST=false
 
 # 1: create the resource group
 az group create -n $RG -l $L
@@ -17,7 +31,8 @@ az deployment group create --resource-group $RG \
     --template-file infrastructure/main.bicep \
     --parameters containerRegistryName=$ACR \
     --parameters deployApps=false \
-    --parameters enableIpWhitelist=true \
+    --parameters enableIpWhitelist=$ENABLE_IP_WHITELIST \
+    --parameters doBuildContainerAppImage=false \
     --parameters ipWhitelist=$ALLOWED_IPS
 
 # 3: build and push image
@@ -28,7 +43,8 @@ az deployment group create --resource-group $RG \
     --template-file infrastructure/main.bicep \
     --parameters containerRegistryName=$ACR \
     --parameters deployApps=true \
-    --parameters enableIpWhitelist=false \
+    --parameters doBuildContainerAppImage=false \
+    --parameters enableIpWhitelist=$ENABLE_IP_WHITELIST \
     --parameters ipWhitelist=''
 
 # 5: get the url

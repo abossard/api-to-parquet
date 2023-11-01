@@ -9,6 +9,12 @@ This is a Go application that processes time series data and saves it to a Parqu
 ## Deployment instructions
 Check the [setup.azcli](infrastructure/setup.azcli) for more information on how to deploy the application.
 
+
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fabossard%2Fapi-to-parquet%2Fblob%2F19c623d143529ddcf93d29a2fc7e437db0e75be6%2Finfrastructure%2Fmain.json)
+
+[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fgithub.com%2Fabossard%2Fapi-to-parquet%2Fblob%2F19c623d143529ddcf93d29a2fc7e437db0e75be6%2Finfrastructure%2Fmain.json)
+
+
 ## Expected JSON Request
 
 ```
