@@ -43,7 +43,7 @@ param containerAppLogAnalyticsName string = 'calog-${projectName}-${salt}'
 param storageAccountName string = 'castrg${salt}'
 param blobContainerName string = 'parquet${salt}'
 param synapseWorkspaceName string = 'synapse-${projectName}-${salt}'
-param vnetName string = 'vnet${projectName}${salt}'
+param acaVnetName string = 'vnet${projectName}${salt}'
 param adxPoolName string = 'adxpool${salt}'
 param adxDatabaseName string = 'adxdb${salt}'
 param githubApiRepositoryUrl string = 'https://github.com/abossard/api-to-parquet.git'
@@ -70,7 +70,7 @@ module buildContainerImage 'build_image.bicep' = {
 
 // Chapter 001: VNET and Subnets
 resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: vnetName
+  name: acaVnetName
   location: location
   properties: {
     addressSpace: {

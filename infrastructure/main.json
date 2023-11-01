@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.22.6.54827",
-      "templateHash": "4623581056552681581"
+      "templateHash": "9591777716534173378"
     }
   },
   "parameters": {
@@ -125,7 +125,7 @@
       "type": "string",
       "defaultValue": "[format('synapse-{0}-{1}', parameters('projectName'), parameters('salt'))]"
     },
-    "vnetName": {
+    "acaVnetName": {
       "type": "string",
       "defaultValue": "[format('vnet{0}{1}', parameters('projectName'), parameters('salt'))]"
     },
@@ -186,7 +186,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2023-05-01",
-      "name": "[parameters('vnetName')]",
+      "name": "[parameters('acaVnetName')]",
       "location": "[parameters('location')]",
       "properties": {
         "addressSpace": {
@@ -380,12 +380,12 @@
           }
         },
         "vnetConfiguration": {
-          "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('containerAppSubnetName'))]"
+          "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('acaVnetName'), parameters('containerAppSubnetName'))]"
         }
       },
       "dependsOn": [
         "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('containerAppLogAnalyticsName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('acaVnetName'))]"
       ]
     },
     {
