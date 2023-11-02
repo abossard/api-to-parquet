@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.22.6.54827",
-      "templateHash": "15184150317469521758"
+      "templateHash": "2596835164164980433"
     }
   },
   "parameters": {
@@ -21,6 +21,13 @@
       "defaultValue": "",
       "metadata": {
         "description": "List of IP addresses to whitelist. Separate with commas. Leave empty for public access."
+      }
+    },
+    "skipBuildAndPushContainerImage": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Skip building and pushing the container image. Use this if you have already built and pushed the image."
       }
     }
   },
@@ -43,6 +50,9 @@
           },
           "enableIpWhitelist": {
             "value": "[not(equals(parameters('ipWhitelist'), ''))]"
+          },
+          "doBuildContainerAppImage": {
+            "value": "[not(parameters('skipBuildAndPushContainerImage'))]"
           }
         },
         "template": {
@@ -963,5 +973,19 @@
         }
       }
     }
-  ]
+  ],
+  "outputs": {
+    "endpoint": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'main'), '2022-09-01').outputs.containerAppFQDN.value]"
+    },
+    "staticIp": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'main'), '2022-09-01').outputs.containerAppStaticIP.value]"
+    },
+    "apiKey": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'main'), '2022-09-01').outputs.apiKey.value]"
+    }
+  }
 }
