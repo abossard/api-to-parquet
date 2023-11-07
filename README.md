@@ -24,17 +24,21 @@ To use the key during the call, add a query parameter `key` to the url, e.g.:
 GET https://api.mydomain.com/?key=abcdef0123456789 HTTP/1.1
 ```
 
-## Expected JSON Request
+## GET: How to get the lastTimeGenerated and maxTimestamp
 
 ```
-GET http://localhost:8080/ HTTP/1.1
+GET https://api.mydomain.com/?key=abcdef0123456789 HTTP/1.1
 ```
-Will return the `lastTimeGenerated` property as well as the maxTimestamp, which is the highest timestamp
+
+Will return the `lastTimeGenerated` property as well as the `maxTimestamp`, which is the highest timestamp
 that has even been sent to the API.
 
+## POST: How to upload new data
+
+(the format of the post body is meant to be executed e.g. with HTTP Client in VS Code.)
 
 ```
-POST http://localhost:8080/ HTTP/1.1
+POST https://api.mydomain.com/?key=abcdef0123456789 HTTP/1.1
 content-type: application/json
 
 {
