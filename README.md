@@ -80,7 +80,8 @@ content-type: application/json
 }
 ```
 - `content`: Contains the data that is being written to parquet
-- `file`: is the filename that is used when the output blob is created. If there is an existing blob, it will be overwritten with the new data
+- `file`: is the filename that is used when the output blob is created. If there is an existing blob, it will be overwritten with the new data.
+   **Important**: For the purpose of data ingestion, it's important that the file path contains YEAR, MONTH, DAY and HOUR. The filename itself can be anything, but needs to end in `.parquet`. Valid path: `2023/10/11/19/2023-10-11-19-123e4567-e89b-12d3-a456-426614174000.parquet`. Invalid path: `2023-10-11-19.parquet`
 - `timeGenerated`: is being used as the `lastTimeGenerated` when the `/` is being called
 - `id`: Doesn't have a purpose yet
 
