@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.22.6.54827",
-      "templateHash": "2596835164164980433"
+      "version": "0.23.1.45101",
+      "templateHash": "11783688325926000545"
     }
   },
   "parameters": {
@@ -61,8 +61,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.22.6.54827",
-              "templateHash": "9591777716534173378"
+              "version": "0.23.1.45101",
+              "templateHash": "16812169847138660538"
             }
           },
           "parameters": {
@@ -211,6 +211,7 @@
             "acrPullRole": "[resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
             "storageRole": "[resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
             "appEnvSubnetCidr": "[cidrSubnet(parameters('vnetAddressSpace'), 23, 0)]",
+            "contributorRole": "[resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
             "keyAppendix": "[if(greater(length(parameters('apiKeyToUse')), 0), format('?key={0}', parameters('apiKeyToUse')), '')]"
           },
           "resources": [
@@ -238,6 +239,20 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Synapse/workspaces/kustoPools', parameters('synapseWorkspaceName'), parameters('adxPoolName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Synapse/workspaces/kustoPools/principalAssignments",
+              "apiVersion": "2021-06-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('synapseWorkspaceName'), parameters('adxPoolName'), guid(resourceGroup().id, resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), 'ADXAdmin'))]",
+              "properties": {
+                "role": "AllDatabasesAdmin",
+                "principalType": "App",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), '2023-01-31').principalId]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces/kustoPools', parameters('synapseWorkspaceName'), parameters('adxPoolName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName')))]"
               ]
             },
             {
@@ -362,6 +377,22 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('deploySynapse')]",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Synapse/workspaces/{0}/kustoPools/{1}', parameters('synapseWorkspaceName'), parameters('adxPoolName'))]",
+              "name": "[guid(resourceGroup().id, resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), variables('contributorRole'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('contributorRole')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName'))), '2023-01-31').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces/kustoPools', parameters('synapseWorkspaceName'), parameters('adxPoolName'))]",
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName')))]"
               ]
             },
@@ -500,6 +531,10 @@
                       "image": "[format('{0}/{1}', reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), '2023-07-01').loginServer, reference(resourceId('Microsoft.Resources/deployments', 'build_image'), '2022-09-01').outputs.imageWithTag.value)]",
                       "env": [
                         {
+                          "name": "POST_BACKEND_URL",
+                          "value": "[format('{0}/v2/rest/query', reference(resourceId('Microsoft.Synapse/workspaces/kustoPools', parameters('synapseWorkspaceName'), parameters('adxPoolName')), '2021-06-01-preview').uri)]"
+                        },
+                        {
                           "name": "OMIT_STARTUP_CHECK",
                           "value": "true"
                         },
@@ -565,6 +600,7 @@
                 "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
                 "[resourceId('Microsoft.Cache/redis', parameters('redisCacheName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.Synapse/workspaces/kustoPools', parameters('synapseWorkspaceName'), parameters('adxPoolName'))]",
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', parameters('containerAppName')))]"
               ]
             },
@@ -642,8 +678,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.22.6.54827",
-                      "templateHash": "3676636159162262997"
+                      "version": "0.23.1.45101",
+                      "templateHash": "4089931182806497416"
                     }
                   },
                   "parameters": {

@@ -54,12 +54,12 @@ content-type: application/json
 
 ###
 
-POST https://ca-jsontoparquet-hisv2.lemonbeach-e3256269.westeurope.azurecontainerapps.io/query?key=u5pvjtrozvx3c HTTP/1.1
+POST https://ca-jsontoparquet-buzox.jollywater-0f1dd287.westeurope.azurecontainerapps.io/query?key=acl7dhc56nkgg HTTP/1.1
 content-type: application/json
 
 {   
-    "db":"adxdbhisv2",
-    "csl":"OmyaData | count",
+    "db":"adxdbbuzox",
+    "csl":"TelemetryData | count",
     "properties": {
             "Options":{ "queryconsistency": "strongconsistency"}
     }
