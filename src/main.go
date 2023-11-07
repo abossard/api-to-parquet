@@ -6,8 +6,12 @@ import (
 	"encoding/hex"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"time"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
@@ -81,6 +85,36 @@ func KeyRequired(keyToCompareWith string) gin.HandlerFunc {
 	}
 }
 
+func ReverseProxy(target string) gin.HandlerFunc {
+	// extract scheme and host from target variable
+	u, err := url.Parse(target)
+	if err != nil {
+		log.Fatal(err)
+	}
+	scheme := u.Scheme
+	host := u.Host
+	path := u.Path
+	credential, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return func(c *gin.Context) {
+		log.Println("Proxying to " + target)
+		token, err := credential.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{"https://api.kusto.windows.net"}})
+		if err != nil {
+			log.Fatal(err)
+		}
+		director := func(req *http.Request) {
+			req.URL.Scheme = scheme
+			req.URL.Host = host
+			req.URL.Path = path
+			req.Header["Authorization"] = []string{"Bearer " + token.Token} // add the authentication header
+		}
+		proxy := &httputil.ReverseProxy{Director: director}
+		proxy.ServeHTTP(c.Writer, c.Request) // forward the request and return the response
+	}
+}
+
 const lastTimeGeneratedKey = "lastTimestamp"
 const maxTimestampKey = "maxTimestamp"
 
@@ -105,6 +139,11 @@ func main() {
 	omitStartUpCheck := os.Getenv("OMIT_STARTUP_CHECK")
 	if omitStartUpCheck == "" {
 		omitStartUpCheck = ""
+	}
+
+	postBackendUrl := os.Getenv("POST_BACKEND_URL")
+	if postBackendUrl == "" {
+		postBackendUrl = "https://adxpoolhisv2.synapse-jsontoparquet-hisv2.kusto.azuresynapse.net/v2/rest/query"
 	}
 
 	cache, err := NewCache()
@@ -204,6 +243,8 @@ func main() {
 			"maxTimestamp":      maxTimestamp,
 		})
 	})
+
+	router.POST("/query", ReverseProxy(postBackendUrl))
 	router.POST("/", func(c *gin.Context) {
 		log.Printf("Request information: %+v", c.Request)
 		var newRecord input_record

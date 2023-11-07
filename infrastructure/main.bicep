@@ -151,6 +151,14 @@ resource synapseAdx 'Microsoft.Synapse/workspaces/kustoPools@2021-06-01-preview'
       hotCachePeriod: 'P31D'
     }
   }
+  resource addUai 'principalAssignments' = {
+    name: guid(resourceGroup().id, uai.id, 'ADXAdmin')
+    properties: {
+      role: 'AllDatabasesAdmin'
+      principalType: 'App'
+      principalId: uai.properties.principalId
+    }
+  }
 }
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
@@ -188,6 +196,17 @@ resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (useM
   scope: acr
   properties: {
     roleDefinitionId: acrPullRole
+    principalId: uai.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+var contributorRole = resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+resource uaiAdxRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploySynapse) {
+  name: guid(resourceGroup().id, uai.id, contributorRole)
+  scope: synapseAdx
+  properties: {
+    roleDefinitionId: contributorRole
     principalId: uai.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -304,6 +323,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployApps)
           name: containerAppName
           image: '${acr.properties.loginServer}/${buildContainerImage.outputs.imageWithTag}'
           env: [
+            {
+              name: 'POST_BACKEND_URL'
+              value: '${synapseAdx.properties.uri}/v2/rest/query'
+            }
             {
               name: 'OMIT_STARTUP_CHECK'
               value: 'true'

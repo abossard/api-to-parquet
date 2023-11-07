@@ -41,6 +41,32 @@ content-type: application/json
 
 ###
 
+POST http://localhost:8080/query?key=asd HTTP/1.1
+content-type: application/json
+
+{   
+    "db":"adxdbhisv2",
+    "csl":"OmyaData | count",
+    "properties": {
+            "Options":{ "queryconsistency": "strongconsistency"}
+    }
+}
+
+###
+
+POST https://ca-jsontoparquet-hisv2.livelyforest-5f9578c7.westeurope.azurecontainerapps.io/query?key=u5pvjtrozvx3c HTTP/1.1
+content-type: application/json
+
+{   
+    "db":"adxdbhisv2",
+    "csl":"OmyaData | count",
+    "properties": {
+            "Options":{ "queryconsistency": "strongconsistency"}
+    }
+}
+
+###
+
 GET http://localhost:8080/?key=123 HTTP/1.1
 ###
 POST https://ca-jsontoparquet-rsgxnp2yzxobq.nicesea-49e4b167.westeurope.azurecontainerapps.io/?key=j3mhfhc4z4wng HTTP/1.1
