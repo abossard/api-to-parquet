@@ -41,20 +41,20 @@ content-type: application/json
 
 ###
 
-POST http://localhost:8080/query?key=asd HTTP/1.1
+POST http://localhost:8080/query?key=u5pvjtrozvx3c HTTP/1.1
 content-type: application/json
 
 {   
     "db":"adxdbhisv2",
-    "csl":"OmyaData | count",
+    "csl":"OmyaData | take 100",
     "properties": {
-            "Options":{ "queryconsistency": "strongconsistency"}
+        "Options":{ "queryconsistency": "strongconsistency"}
     }
 }
 
 ###
 
-POST https://ca-jsontoparquet-hisv2.livelyforest-5f9578c7.westeurope.azurecontainerapps.io/query?key=u5pvjtrozvx3c HTTP/1.1
+POST https://ca-jsontoparquet-hisv2.lemonbeach-e3256269.westeurope.azurecontainerapps.io/query?key=u5pvjtrozvx3c HTTP/1.1
 content-type: application/json
 
 {   

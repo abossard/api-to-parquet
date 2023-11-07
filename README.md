@@ -15,6 +15,15 @@ After the deployment finished, you'll see the public URL with the API Key in the
 
 For more detailed instructions and other scenarios check: [setup.azcli](infrastructure/setup.azcli) 
 
+## Shared Access Signature (SAS) Token
+By default, the deployment adds an api key or shared access signature to protect the API. After the deployment you'll get the key in the `apiKey` output. 
+
+To use the key during the call, add a query parameter `key` to the url, e.g.:
+
+```
+GET https://api.mydomain.com/?key=abcdef0123456789 HTTP/1.1
+```
+
 ## Expected JSON Request
 
 ```
