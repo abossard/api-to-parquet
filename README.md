@@ -2,12 +2,14 @@
 
 This is a Go application that processes time series data and saves it to a Parquet file. The application uses a cache to store previously processed data and avoid duplicate writes to the Parquet file.
 
->  **Important**: For the purpose of data ingestion, it's important that the `file` path contains YEAR, MONTH, DAY and HOUR. The filename itself can be anything, but needs to end in `.parquet`. Valid path: `2023/10/11/19/2023-10-11-19-123e4567-e89b-12d3-a456-426614174000.parquet`. Invalid path: `2023-10-11-19.parquet`
+>  **Important**: For the purpose of data ingestion, it's important that the `file` path contains the data source, YEAR, MONTH, DAY and HOUR. The filename itself can be anything, but needs to end in `.parquet`. Valid path: `<data source>/2023/10/26/19/2023-10-11-19-123e4567-e89b-12d3-a456-426614174000.parquet`. This will ensure efficient lookups.
 
 
 ## Roadmap
-[x] Secret token concept for the API, e.g. REQUIRE_API_KEY=abcdefghs
-[x] Data verfication method
+- [x] Secret token concept for the API, e.g. REQUIRE_API_KEY=abcdefghs
+- [x] Data verfication method
+- [x] Get last timestamp
+- [ ] Add a function called Query2, that alw
 
 ## Deployment instructions
 [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fabossard%2Fapi-to-parquet%2Fmain%2Finfrastructure%2Fazuredeploy.json)
@@ -77,7 +79,7 @@ content-type: application/json
             "quality": {{$randomInt 1 43}}
         }
     ],
-    "file": "2023/10/11/{{$timestamp}}-{{$guid}}.parquet",
+    "file": "<data source>/2023/10/26/19/{{$timestamp}}-{{$guid}}.parquet",
     "timeGenerated": {{$timestamp}},
     "id": "{{$guid}}"
 }
@@ -92,7 +94,7 @@ content-type: application/json
 SELECT TOP 100 *
 FROM
     OPENROWSET(
-        BULK 'https://ACCOUNTNAME.blob.core.windows.net/CONTAINERNAME/tests/2023/10/26/19/*.parquet',
+        BULK 'https://ACCOUNTNAME.blob.core.windows.net/CONTAINERNAME/factory-1/2023/10/26/19/*.parquet',
         FORMAT='PARQUET'
     ) AS data
 ```
